@@ -1,0 +1,31 @@
+package com.formplantao.controller;
+
+import com.formplantao.model.dto.MarcacaoDTO;
+import com.formplantao.service.MarcacaoService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/marcacoes")
+public class MarcacaoController {
+
+    private final MarcacaoService marcacaoService;
+
+    @PostMapping
+    public ResponseEntity<MarcacaoDTO> salvarMarcacao(@RequestBody @Valid MarcacaoDTO marcacaoDTO) {
+        MarcacaoDTO saved = marcacaoService.salvarMarcacao(marcacaoDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<MarcacaoDTO>> listarMarcacao() {
+        List<MarcacaoDTO> marcacoes = marcacaoService.listarMarcacao();
+        return ResponseEntity.ok(marcacoes);
+    }
+}

@@ -1,0 +1,16 @@
+Post /funcionarios
+
+{
+  "nome": "Gustavo",
+  "matricula": 2315682,
+  "locacao": "Cisbaf"
+}
+
+Post /formularios
+
+{
+  "horas": 24,
+  "dataReferencia": "2026-07",
+  "funcionarioId": 1,
+  "marcacoesId": [  ]
+}
