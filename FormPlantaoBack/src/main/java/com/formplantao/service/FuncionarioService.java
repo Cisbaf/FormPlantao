@@ -16,6 +16,10 @@ import java.util.List;
 public class FuncionarioService {
     private final FuncionarioRepository funcionarioRepository;
 
+    public List<Funcionario> getAll() {
+        return funcionarioRepository.findAll();
+    }
+
     public FuncionarioDTO salvarFuncionario(FuncionarioDTO funcionarioDTO) {
         var newfuncionario = Funcionario.builder()
                 .locacao(funcionarioDTO.locacao())
@@ -46,8 +50,8 @@ public class FuncionarioService {
         return FuncionarioDTO.builder().id(atualizado.getId()).nome(atualizado.getNome()).matricula(atualizado.getMatricula()).locacao(atualizado.getLocacao()).build();
     }
 
-    public List<Funcionario> getAll() {
-        return funcionarioRepository.findAll();
+    public void deleteByIdFuncionario(Long id) {
+        funcionarioRepository.deleteById(id);
     }
 
     @Transactional

@@ -9,4 +9,6 @@ import java.util.List;
 public interface FormularioUnicoRepository extends JpaRepository<FormularioUnico, Long> {
     List<FormularioUnico> findByDataReferencia(YearMonth dataReferencia);
 
+    void deleteAllByDataReferencia(YearMonth dataReferencia);
+
 }

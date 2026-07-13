@@ -11,6 +11,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.YearMonth;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -33,6 +34,20 @@ public class FormularioService {
                         .marcacoesId(f.getMarcacoes().stream().map(Marcacao::getId).toList())
                         .build())
                 .toList();
+    }
+
+    public List<FormularioUnico> getAll() {
+        return formularioUnicoRepository.findAll();
+    }
+
+    @Transactional
+    public void deleteById(Long id) {
+        formularioUnicoRepository.deleteById(id);
+    }
+
+    @Transactional
+    public void deleteAllByDataReferencia(YearMonth dataReferencia) {
+        formularioUnicoRepository.deleteAllByDataReferencia(dataReferencia);
     }
 
     @Transactional
@@ -102,7 +117,6 @@ public class FormularioService {
                 .collect(Collectors.toList());
     }
 
-    // Helper method to keep your code DRY (Don't Repeat Yourself)
     private FormularioDTO convertToDTO(FormularioUnico entity) {
         List<Long> marcacoesIds = entity.getMarcacoes() != null
                 ? entity.getMarcacoes().stream().map(Marcacao::getId).collect(Collectors.toList())
@@ -117,7 +131,4 @@ public class FormularioService {
                 .build();
     }
 
-    public List<FormularioUnico> getAll() {
-        return formularioUnicoRepository.findAll();
-    }
 }

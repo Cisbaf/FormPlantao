@@ -34,4 +34,13 @@ public class MarcacaoController {
         List<MarcacaoDTO> marcacoes = marcacaoService.listarMarcacao();
         return ResponseEntity.ok(marcacoes);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<MarcacaoDTO> deletarMarcacao(@PathVariable Long id) {
+        if (id == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        marcacaoService.deletarByIdMarcacao(id);
+        return ResponseEntity.noContent().build();
+    }
 }

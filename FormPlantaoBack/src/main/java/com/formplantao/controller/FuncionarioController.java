@@ -35,4 +35,13 @@ public class FuncionarioController {
         List<Funcionario> funcionarios = funcionarioService.getAll();
         return ResponseEntity.ok(funcionarios);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteFuncionario(@PathVariable Long id) {
+        if (id == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        funcionarioService.deleteByIdFuncionario(id);
+        return ResponseEntity.noContent().build();
+    }
 }

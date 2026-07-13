@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.YearMonth;
 import java.util.List;
 
 @RestController
@@ -34,5 +35,23 @@ public class FormularioController {
     public ResponseEntity<List<FormularioDTO>> getAllDTO() {
         List<FormularioDTO> dto = formularioService.getAllDTO();
         return ResponseEntity.ok(dto);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+        if (id == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        formularioService.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/data")
+    public ResponseEntity<Void> deleteByDataReferencia(@RequestParam YearMonth dataReferencia) {
+        if (dataReferencia == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        formularioService.deleteAllByDataReferencia(dataReferencia);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -67,6 +67,10 @@ public class MarcacaoService {
                 .build();
     }
 
+    public void deletarByIdMarcacao(Long id) {
+        marcacaoRepository.deleteById(id);
+    }
+
     public List<MarcacaoDTO> listarMarcacao() {
         var marcacoes = marcacaoRepository.findAll();
         return marcacoes.stream()
