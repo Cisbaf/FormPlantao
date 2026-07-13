@@ -4,19 +4,41 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 
-const ColorModeContext = createContext({ toggleColorMode: () => {} });
+const ColorModeContext = createContext({ toggleColorMode: () => { } });
 
 export function useColorMode() {
   return useContext(ColorModeContext);
 }
 
 export default function Providers({ children }: { children: React.ReactNode }) {
+  // Começa como dark por padrão
   const [mode, setMode] = useState<"light" | "dark">("dark");
+  const [mounted, setMounted] = useState(false);
+
+  // 1. Ao carregar a tela, verifica se há um tema salvo no localStorage
+  useEffect(() => {
+    const savedMode = localStorage.getItem("themeMode") as "light" | "dark" | null;
+
+    if (savedMode) {
+      setMode(savedMode);
+    } else {
+      // Opcional: Se não tiver nada salvo, puxa a preferência do sistema operacional
+      const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      setMode(systemPrefersDark ? "dark" : "light");
+    }
+
+    setMounted(true);
+  }, []);
 
   const colorMode = React.useMemo(
     () => ({
       toggleColorMode: () => {
-        setMode((prevMode) => (prevMode === "light" ? "dark" : "light"));
+        setMode((prevMode) => {
+          const nextMode = prevMode === "light" ? "dark" : "light";
+          // 2. Salva a nova escolha no localStorage toda vez que alterar
+          localStorage.setItem("themeMode", nextMode);
+          return nextMode;
+        });
       },
     }),
     []
@@ -28,10 +50,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         palette: {
           mode,
           primary: {
-            main: mode === "dark" ? "#6366f1" : "#4f46e5", // Indigo
+            main: mode === "dark" ? "#6366f1" : "#4f46e5",
           },
           secondary: {
-            main: mode === "dark" ? "#10b981" : "#059669", // Emerald
+            main: mode === "dark" ? "#10b981" : "#059669",
           },
           background: {
             default: mode === "dark" ? "#0b0f19" : "#f8fafc",
@@ -73,11 +95,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       }),
     [mode]
   );
-
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   if (!mounted) {
     return <div style={{ opacity: 0 }}>{children}</div>;
