@@ -19,8 +19,8 @@ public class FormularioController {
     private final FormularioService formularioService;
 
     @PostMapping
-    public ResponseEntity<FormularioDTO> save(@RequestBody @Valid FormularioDTO formularioDTO) {
-        FormularioDTO saved = formularioService.save(formularioDTO);
+    public ResponseEntity<Object> save(@RequestBody @Valid FormularioDTO formularioDTO) {
+        Object saved = formularioService.saveFormulario(formularioDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 

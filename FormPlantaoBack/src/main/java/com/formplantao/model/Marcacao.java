@@ -18,8 +18,8 @@ public class Marcacao {
     private Long id;
     @Column(nullable = false)
     private LocalDate dataMarcada;
-    @Column(nullable = false)
-    private char marca;
+    @Column(nullable = false, length = 2)
+    private String marca;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "formulario_unico_id", nullable = false)

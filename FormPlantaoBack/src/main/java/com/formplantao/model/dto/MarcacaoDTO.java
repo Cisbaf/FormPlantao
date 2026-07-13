@@ -2,6 +2,7 @@ package com.formplantao.model.dto;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
+import org.hibernate.validator.constraints.Length;
 
 import java.time.LocalDate;
 
@@ -11,7 +12,8 @@ public record MarcacaoDTO(
         @NotNull
         LocalDate dataMarcada,
         @NotNull
-        char marca,
+        @Length(max = 2)
+        String marca,
         @NotNull
         Long formId
 ) {

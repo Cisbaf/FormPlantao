@@ -3,7 +3,10 @@ package com.formplantao.service;
 import com.formplantao.model.Funcionario;
 import com.formplantao.model.dto.FuncionarioDTO;
 import com.formplantao.repository.FuncionarioRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -45,5 +48,13 @@ public class FuncionarioService {
 
     public List<Funcionario> getAll() {
         return funcionarioRepository.findAll();
+    }
+
+    @Transactional
+    @EventListener(ApplicationReadyEvent.class)
+    public void saveTudo(){
+        if (funcionarioRepository.findByNomeAndMatricula("Tudo",0L).isEmpty()) {
+            funcionarioRepository.save(Funcionario.builder().nome("Tudo").matricula(0L).locacao("Cisbaf").build());
+        }
     }
 }

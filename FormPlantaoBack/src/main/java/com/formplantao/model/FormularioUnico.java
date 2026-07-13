@@ -17,7 +17,9 @@ public class FormularioUnico {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(nullable = false)
     private int horas;
+    @Column(nullable = false)
     private YearMonth dataReferencia;
 
     @ManyToOne(fetch = FetchType.LAZY)

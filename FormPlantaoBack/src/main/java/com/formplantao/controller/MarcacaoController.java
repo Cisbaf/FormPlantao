@@ -23,6 +23,12 @@ public class MarcacaoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<MarcacaoDTO> atualizarMarcacao(@PathVariable Long id, @RequestBody @Valid MarcacaoDTO marcacaoDTO) {
+        MarcacaoDTO updated = marcacaoService.atualizarMarcacao(id, marcacaoDTO);
+        return ResponseEntity.ok(updated);
+    }
+
     @GetMapping
     public ResponseEntity<List<MarcacaoDTO>> listarMarcacao() {
         List<MarcacaoDTO> marcacoes = marcacaoService.listarMarcacao();
