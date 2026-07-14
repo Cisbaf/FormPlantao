@@ -24,6 +24,7 @@ import {
   MenuItem,
   Select,
   Snackbar,
+  Stack,
   TextField,
   Toolbar,
   Tooltip,
@@ -33,6 +34,7 @@ import { DatePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { red, yellow } from '@mui/material/colors';
 interface DashboardLayoutProps {
   children: React.ReactNode;
   onRefresh?: () => void;
@@ -158,34 +160,33 @@ export default function DashboardLayout({ children, onRefresh }: DashboardLayout
               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <img src="/cisbaf.png" alt="Logo Cisbaf" style={{ height: '60px', width: 'auto', objectFit: 'contain' }} />
               </Box>
-              <div>
+              <Stack direction="column" spacing={0} sx={{ alignItems: 'flex-start' }}>
+
                 <Typography
-                  variant="h6"
-                  noWrap
-                  sx={{
-                    fontWeight: 1000,
-                    letterSpacing: ".5px",
-                    background: "#991919",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                  }}
+                  sx={(theme) => ({
+                    fontSize: { xs: '0.875rem', md: '1rem' },
+                    fontWeight: 900,
+                    color: theme.palette.mode === 'dark' ? red[400] : red[700],
+                    letterSpacing: '-0.025em',
+                  })}
                 >
-                  Plantão CISBAF
+                  Protocolo Cisbaf
                 </Typography>
+
                 <Typography
-                  variant="caption"
-                  noWrap
-                  sx={{
-                    fontWeight: 1000,
-                    letterSpacing: ".5px",
-                    background: "#ca8a04",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                  }}
+                  sx={(theme) => ({
+                    fontSize: { xs: '0.625rem', md: '0.75rem' },
+                    fontWeight: 'bold',
+                    color: theme.palette.mode === 'dark' ? yellow[400] : yellow[700],
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                  })}
                 >
                   Painel de Frequência de Plantões
                 </Typography>
-              </div>
+
+              </Stack>
+
             </Box>
 
             <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.5, sm: 1.5 } }}>
@@ -260,9 +261,7 @@ export default function DashboardLayout({ children, onRefresh }: DashboardLayout
             theme.palette.mode === "dark" ? "rgba(10, 15, 30, 0.4)" : "rgba(240, 240, 240, 0.4)",
         }}
       >
-        <Typography variant="body2" color="text.secondary">
-          © {new Date().getFullYear()} Plantão CISBAF. Todos os direitos reservados.
-        </Typography>
+
       </Box>
 
       {/* Dialog: Novo Funcionário */}
