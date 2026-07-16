@@ -5,10 +5,9 @@ import { MarkColorConfig } from "./types";
 // ========================
 
 export const MARK_COLORS: Record<string, MarkColorConfig> = {
-  P: { bg: "#3b82f6", text: "#ffffff", label: "Plantão 12 Horas (P)" },
+  X: { bg: "#3b82f6", text: "#ffffff", label: "Plantão 12 Horas (X)" },
   F: { bg: "#10b981", text: "#ffffff", label: "Férias (F)" },
   E: { bg: "#8b5cf6", text: "#ffffff", label: "Plantão Extra 12 Horas (E)" },
-  L: { bg: "#f59e0b", text: "#ffffff", label: "Licença (L)" },
   A: { bg: "#ef4444", text: "#ffffff", label: "Ausência (A)" },
 };
 
