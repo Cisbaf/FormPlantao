@@ -101,13 +101,14 @@ public class FormularioService {
         if (isCoringaTodos(alvo)) {
             return List.of(alvo);
         }
+
         return funcionarioRepository.findAll().stream()
                 .filter(this::isCoringaTodos)
                 .toList();
     }
 
     private boolean isCoringaTodos(Funcionario f) {
-        return !NOME_TODOS.equals(f.getNome()) && MATRICULA_TODOS.equals(f.getMatricula());
+        return !NOME_TODOS.equals(f.getNome()) || !MATRICULA_TODOS.equals(f.getMatricula());
     }
 
     private Set<Marcacao> buscarMarcacoes(List<Long> ids) {

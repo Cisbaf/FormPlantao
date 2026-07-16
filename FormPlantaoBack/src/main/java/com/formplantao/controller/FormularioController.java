@@ -21,8 +21,14 @@ public class FormularioController {
 
     @PostMapping
     public ResponseEntity<Object> save(@RequestBody @Valid FormularioDTO formularioDTO) {
+        try{
+
         Object saved = formularioService.saveFormulario(formularioDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+            return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+        }catch (Exception e){
+            throw new RuntimeException(e.getMessage());
+        }
+
     }
 
     @GetMapping
