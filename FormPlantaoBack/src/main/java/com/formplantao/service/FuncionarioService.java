@@ -40,12 +40,11 @@ public class FuncionarioService {
     public FuncionarioDTO atualizarFuncionario(FuncionarioDTO funcionarioDTO, Long id) {
         var funciEx = funcionarioRepository.findById(id).orElseThrow();
 
-        var newFuncionario = Funcionario.builder()
-                .nome(funcionarioDTO.nome() != null ? funcionarioDTO.nome() : funciEx.getNome())
-                .matricula(funcionarioDTO.matricula() != null ? funcionarioDTO.matricula() : funciEx.getMatricula())
-                .locacao(funcionarioDTO.locacao() != null ? funcionarioDTO.locacao() : funciEx.getLocacao())
-                .build();
-        var atualizado = funcionarioRepository.save(newFuncionario);
+        funciEx.setNome(funcionarioDTO.nome() != null ? funcionarioDTO.nome() : funciEx.getNome());
+        funciEx.setMatricula(funcionarioDTO.matricula() != null ? funcionarioDTO.matricula() : funciEx.getMatricula());
+        funciEx.setLocacao(funcionarioDTO.locacao() != null ? funcionarioDTO.locacao() : funciEx.getLocacao());
+
+        var atualizado = funcionarioRepository.save(funciEx);
 
         return FuncionarioDTO.builder().id(atualizado.getId()).nome(atualizado.getNome()).matricula(atualizado.getMatricula()).locacao(atualizado.getLocacao()).build();
     }
@@ -57,8 +56,8 @@ public class FuncionarioService {
     @Transactional
     @EventListener(ApplicationReadyEvent.class)
     public void saveTudo(){
-        if (funcionarioRepository.findByNomeAndMatricula("Tudo",0L).isEmpty()) {
-            funcionarioRepository.save(Funcionario.builder().nome("Tudo").matricula(0L).locacao("Cisbaf").build());
+        if (funcionarioRepository.findByNomeAndMatricula("Todos",0L).isEmpty()) {
+            funcionarioRepository.save(Funcionario.builder().nome("Todos").matricula(0L).locacao("Cisbaf").build());
         }
     }
 }

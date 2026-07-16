@@ -11,7 +11,7 @@ import java.util.List;
 public record FormularioDTO(
         Long id,
         @NotNull
-        int horas,
+        Integer horas,
         @NotNull
         YearMonth dataReferencia,
         @NotNull

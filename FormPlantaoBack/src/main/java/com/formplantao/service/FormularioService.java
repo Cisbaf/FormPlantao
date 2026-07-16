@@ -21,7 +21,8 @@ public class FormularioService {
     private final FormularioUnicoRepository formularioUnicoRepository;
     private final MarcacaoRepository marcacaoRepository;
     private final FuncionarioRepository funcionarioRepository;
-
+    private static final String NOME_TODOS = "Todos";
+    private static final Long MATRICULA_TODOS = 0L;
 
 
     public List<FormularioDTO> getAllDTO() {
@@ -51,70 +52,66 @@ public class FormularioService {
     }
 
     @Transactional
-    public List<FormularioDTO> saveFormulario(FormularioDTO formularioDTO) {
-        if (formularioDTO == null || formularioDTO.funcionarioId() == null) {
+    public FormularioDTO editFormulario(FormularioDTO formularioDTO, Long id) {
+        if (formularioDTO == null || id == null) {
+            return null;
+        }
+        var formulario = formularioUnicoRepository.findById(id).orElseThrow();
+
+        formulario.setDataReferencia(formularioDTO.dataReferencia() != null ?  formularioDTO.dataReferencia() : formulario.getDataReferencia());
+        formulario.setHoras(formularioDTO.horas() != null ? formularioDTO.horas() : formulario.getHoras());
+
+        var formularioEditado = formularioUnicoRepository.save(formulario);
+
+        return convertToDTO(formularioEditado);
+    }
+
+    @Transactional
+    public List<FormularioDTO> saveFormulario(FormularioDTO dto) {
+        if (dto == null || dto.funcionarioId() == null) {
             throw new IllegalArgumentException("Dados do formulário inválidos.");
         }
 
-        // 1. Identificar o funcionário que veio no pedido
-        var funcionarioAlvo = funcionarioRepository.findById(formularioDTO.funcionarioId())
+        var alvo = funcionarioRepository.findById(dto.funcionarioId())
                 .orElseThrow(() -> new IllegalArgumentException("Funcionário não encontrado."));
 
-        // 2. Definir a lista de funcionários que receberão o formulário
-        List<Funcionario> funcionarios;
-        if ("Tudo".equals(funcionarioAlvo.getNome()) && Long.valueOf(0L).equals(funcionarioAlvo.getMatricula())) {
-            funcionarios = funcionarioRepository.findAll();
-            // Remove o próprio registro "Tudo" da lista, se ele vier na busca do banco
-            funcionarios.removeIf(f -> "Tudo".equals(f.getNome()) && Long.valueOf(0L).equals(f.getMatricula()));
-        } else {
-            // Se for um funcionário normal, criamos uma lista contendo apenas ele
-            funcionarios = List.of(funcionarioAlvo);
-        }
-
-        if (funcionarios.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        // 3. Buscar os formulários que já existem nessa data
-        var formulariosExistentes = formularioUnicoRepository.findByDataReferencia(formularioDTO.dataReferencia());
-        Set<Long> funcComFormularioIds = formulariosExistentes.stream()
+        Set<Long> jaTemFormulario = formularioUnicoRepository.findByDataReferencia(dto.dataReferencia())
+                .stream()
                 .map(f -> f.getFuncionario().getId())
                 .collect(Collectors.toSet());
 
-        // 4. Filtrar: Manter apenas os funcionários que ainda NÃO têm formulário
-        List<Funcionario> funcionariosParaProcessar = funcionarios.stream()
-                .filter(func -> !funcComFormularioIds.contains(func.getId()))
+        Set<Marcacao> marcacoes = buscarMarcacoes(dto.marcacoesId());
+
+        List<FormularioUnico> novos = destinatarios(alvo).stream()
+                .filter(func -> !jaTemFormulario.contains(func.getId()))
+                .map(func -> FormularioUnico.builder()
+                        .horas(dto.horas())
+                        .dataReferencia(dto.dataReferencia())
+                        .funcionario(func)
+                        .marcacoes(new HashSet<>(marcacoes))
+                        .build())
                 .toList();
 
-        // Se todos já tiverem formulário (ou o único funcionário pedido já tiver), encerra aqui
-        if (funcionariosParaProcessar.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        // 5. Buscar as marcações uma única vez
-        Set<Marcacao> marcacoes = new HashSet<>();
-        if (formularioDTO.marcacoesId() != null && !formularioDTO.marcacoesId().isEmpty()) {
-            marcacoes = marcacaoRepository.findAllByIdIn(formularioDTO.marcacoesId());
-        }
-        final Set<Marcacao> finalMarcacoes = marcacoes;
-
-        // 6. Construir os novos formulários para quem passou no filtro
-        List<FormularioUnico> formulariosParaSalvar = funcionariosParaProcessar.stream()
-                .map(func -> FormularioUnico.builder()
-                        .horas(formularioDTO.horas())
-                        .dataReferencia(formularioDTO.dataReferencia())
-                        .funcionario(func)
-                        .marcacoes(finalMarcacoes)
-                        .build())
-                .collect(Collectors.toList());
-
-        // 7. Salvar tudo (funciona perfeitamente tanto para 1 item quanto para 1000)
-        List<FormularioUnico> formulariosSalvos = formularioUnicoRepository.saveAll(formulariosParaSalvar);
-
-        // 8. Converter para DTO e devolver
-        return formulariosSalvos.stream()
+        return formularioUnicoRepository.saveAll(novos).stream()
                 .map(this::convertToDTO)
-                .collect(Collectors.toList());
+                .toList();
+    }
+
+    private List<Funcionario> destinatarios(Funcionario alvo) {
+        if (!isCuringaTodos(alvo)) {
+            return List.of(alvo);
+        }
+        return funcionarioRepository.findAll().stream()
+                .filter(f -> !isCuringaTodos(f))
+                .toList();
+    }
+
+    private boolean isCuringaTodos(Funcionario f) {
+        return NOME_TODOS.equals(f.getNome()) && MATRICULA_TODOS.equals(f.getMatricula());
+    }
+
+    private Set<Marcacao> buscarMarcacoes(List<Long> ids) {
+        return (ids == null || ids.isEmpty()) ? Set.of() : marcacaoRepository.findAllByIdIn(ids);
     }
 
     private FormularioDTO convertToDTO(FormularioUnico entity) {

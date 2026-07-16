@@ -1,7 +1,10 @@
 package com.formplantao.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 @Entity
 @Getter
@@ -19,4 +22,8 @@ public class Funcionario {
     private Long matricula;
     @Column(length = 20,  nullable = false)
     private String locacao;
+
+    @JsonIgnore
+    @OneToMany(cascade = CascadeType.ALL,  fetch = FetchType.EAGER)
+    private List<FormularioUnico> formularios;
 }
