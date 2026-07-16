@@ -1,8 +1,11 @@
-import React from "react";
-import {
-  Box, Typography, Button, Breadcrumbs, Link, TextField,
-} from "@mui/material";
 import { ArrowBack, Search } from "@mui/icons-material";
+import {
+  Box,
+  Breadcrumbs,
+  Button,
+  Link, TextField,
+  Typography,
+} from "@mui/material";
 
 interface ScheduleHeaderProps {
   monthLabel: string;
@@ -37,7 +40,7 @@ export default function ScheduleHeader({
         </Box>
         <Box sx={{ display: "flex", alignItems: "center", width: { xs: "100%", md: "auto" }, border: "1px solid", borderColor: (theme: any) => theme.palette.mode === "dark" ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.12)", borderRadius: "12px", px: 2, py: 0.5, bgcolor: (theme: any) => theme.palette.mode === "dark" ? "rgba(255,255,255,0.02)" : "#fff" }}>
           <Search fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
-          <TextField placeholder="Buscar funcionário ou setor..." variant="standard" fullWidth value={searchTerm} onChange={(e) => onSearchChange(e.target.value)} slotProps={{ input: { disableUnderline: true } }} />
+          <TextField placeholder="Buscar funcionário ou locação..." variant="standard" fullWidth value={searchTerm} onChange={(e) => onSearchChange(e.target.value)} slotProps={{ input: { disableUnderline: true } }} />
         </Box>
       </Box>
     </>

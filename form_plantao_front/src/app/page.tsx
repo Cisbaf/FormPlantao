@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Typography, Button, Box, CircularProgress, Paper, Alert } from "@mui/material";
+import { Typography, Button, Box, CircularProgress, Paper, Alert, Snackbar } from "@mui/material";
 import { CalendarMonth, InfoOutlined } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
-import { fetchFormularios } from "@/lib/api";
+import { deleteByDataReferencia, fetchFormularios } from "@/lib/api";
 import { FormularioUnico } from "@/lib/types";
 import { groupFormulariosByMonth } from "@/lib/utils";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -16,6 +16,12 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [mesesEscondidos, setMesesEscondidos] = useState<string[]>([]);
+  const [toast, setToast] = useState<{ open: boolean; message: string; severity: "success" | "error" }>({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
   const loadData = async () => {
     setLoading(true);
@@ -38,6 +44,33 @@ export default function Home() {
   }, [refreshTrigger]);
 
   const groupedMonths = groupFormulariosByMonth(formularios);
+
+  const handleDeleteMonth = async (dataReferencia: string) => {
+    const confirmar = window.confirm(
+      `Tem certeza que deseja deletar TODOS os formulários do mês ${dataReferencia}? Esta ação não pode ser desfeita.`
+    );
+
+    if (!confirmar) return;
+
+    try {
+      await deleteByDataReferencia(dataReferencia);
+
+      setToast({
+        open: true,
+        message: "Mês deletado com sucesso!",
+        severity: "success"
+      });
+
+      setRefreshTrigger((prev) => prev + 1);
+    } catch (error) {
+      console.error(error);
+      setToast({
+        open: true,
+        message: "Erro ao deletar os formulários do mês.",
+        severity: "error"
+      });
+    }
+  };
 
   return (
     <DashboardLayout onRefresh={() => setRefreshTrigger((prev) => prev + 1)}>
@@ -117,15 +150,30 @@ export default function Home() {
         </Paper>
       ) : (
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", md: "1fr 1fr 1fr" }, gap: 3 }}>
-          {groupedMonths.map((group) => (
+          {groupedMonths.filter(group => !mesesEscondidos.includes(group.label)).map((group) => (
             <MonthCard
               key={group.yearMonth}
               group={group}
               onClick={() => router.push(`/mes/${group.yearMonth}`)}
-            />
+              onDelete={() => handleDeleteMonth(group.yearMonth)} />
           ))}
         </Box>
       )}
+
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={4000}
+        onClose={() => setToast({ ...toast, open: false })}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setToast({ ...toast, open: false })}
+          severity={toast.severity}
+          sx={{ width: "100%", borderRadius: "8px" }}
+        >
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </DashboardLayout>
   );
 }

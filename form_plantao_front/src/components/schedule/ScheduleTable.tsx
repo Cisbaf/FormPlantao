@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Paper, TableContainer, Table, TableHead, TableRow, TableCell,
-  TableBody, Box, Typography, Avatar, Chip,
+  TableBody, Box, Typography, Avatar, Chip, Menu, MenuItem
 } from "@mui/material";
 import { FormularioUnico, EditingCell } from "@/lib/types";
 import { SectorGroup } from "@/lib/types";
@@ -13,6 +13,7 @@ interface ScheduleTableProps {
   forms: FormularioUnico[];
   cycleDays: Date[];
   onCellClick: (form: FormularioUnico, day: Date) => void;
+  onHoursChange?: (form: FormularioUnico, newHoras: number) => void;
 }
 
 /** Cabeçalho do setor na tabela */
@@ -43,7 +44,26 @@ function SectorHeaderRow({ sector, colSpan }: { sector: string; colSpan: number 
 }
 
 /** Linha de um funcionário */
-function EmployeeRow({ form, cycleDays, onCellClick }: { form: FormularioUnico; cycleDays: Date[]; onCellClick: (form: FormularioUnico, day: Date) => void }) {
+function EmployeeRow({ form, cycleDays, onCellClick, onHoursChange }: { form: FormularioUnico; cycleDays: Date[]; onCellClick: (form: FormularioUnico, day: Date) => void; onHoursChange?: (form: FormularioUnico, newHoras: number) => void; }) {
+  // Controle do Menu de seleção de horas
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleSelectHour = (newHoras: number) => {
+    if (newHoras !== form.horas && onHoursChange) {
+      onHoursChange(form, newHoras);
+    }
+    handleClose();
+  };
+
   return (
     <TableRow hover sx={{ "&:hover td": { bgcolor: (theme) => theme.palette.mode === "dark" ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.01)" } }}>
       {/* Nome do funcionário (sticky) */}
@@ -61,9 +81,35 @@ function EmployeeRow({ form, cycleDays, onCellClick }: { form: FormularioUnico; 
         </Box>
       </TableCell>
 
-      {/* Horas */}
+      {/* Horas com Menu Dropdown */}
       <TableCell align="center" sx={{ fontWeight: 600, borderRight: "1px solid rgba(224,224,224,0.3)" }}>
-        <Chip label={`${form.horas}h`} size="small" variant="outlined" />
+        <Chip
+          label={`${form.horas}h`}
+          size="small"
+          variant="outlined"
+          onClick={handleClick}
+          sx={{ cursor: "pointer", "&:hover": { bgcolor: "action.hover" } }}
+        />
+        <Menu
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleClose}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'center',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'center',
+          }}
+        >
+          <MenuItem onClick={() => handleSelectHour(12)} selected={form.horas === 12}>
+            12 horas
+          </MenuItem>
+          <MenuItem onClick={() => handleSelectHour(24)} selected={form.horas === 24}>
+            24 horas
+          </MenuItem>
+        </Menu>
       </TableCell>
 
       {/* Células de marcação */}
@@ -97,7 +143,7 @@ function EmployeeRow({ form, cycleDays, onCellClick }: { form: FormularioUnico; 
 /**
  * Tabela principal de plantão, agrupada por setor/locação.
  */
-export default function ScheduleTable({ forms, cycleDays, onCellClick }: ScheduleTableProps) {
+export default function ScheduleTable({ forms, cycleDays, onCellClick, onHoursChange }: ScheduleTableProps) {
   const sectorGroups = groupFormsBySector(forms);
   const totalColumns = 2 + cycleDays.length; // Nome + Horas + dias
 
@@ -110,13 +156,13 @@ export default function ScheduleTable({ forms, cycleDays, onCellClick }: Schedul
               <TableCell sx={{ fontWeight: 800, zIndex: 10, left: 0, position: "sticky", background: (theme) => theme.palette.mode === "dark" ? "#111827" : "#f1f5f9", minWidth: "200px", borderRight: "1px solid rgba(224,224,224,0.3)" }}>
                 Funcionário
               </TableCell>
-              <TableCell align="center" sx={{ fontWeight: 800, background: (theme) => theme.palette.mode === "dark" ? "#111827" : "#f1f5f9", minWidth: "70px", borderRight: "1px solid rgba(224,224,224,0.3)" }}>
+              <TableCell align="center" sx={{ fontWeight: 800, zIndex: 5, background: (theme) => theme.palette.mode === "dark" ? "#111827" : "#f1f5f9", minWidth: "70px", borderRight: "1px solid rgba(224,224,224,0.3)" }}>
                 Horas
               </TableCell>
               {cycleDays.map((day, idx) => {
                 const { dayNum, monthName, weekDayName, isWeekend } = getDayHeader(day);
                 return (
-                  <TableCell key={idx} align="center" sx={{ p: 1, minWidth: "48px", fontWeight: 700, bgcolor: (theme) => isWeekend ? (theme.palette.mode === "dark" ? "#1e293b" : "#f8fafc") : (theme.palette.mode === "dark" ? "#111827" : "#f1f5f9"), borderRight: "1px solid", borderColor: (theme) => theme.palette.mode === "dark" ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)" }}>
+                  <TableCell key={idx} align="center" sx={{ p: 1, zIndex: 5, minWidth: "48px", fontWeight: 700, bgcolor: (theme) => isWeekend ? (theme.palette.mode === "dark" ? "#1e293b" : "#f8fafc") : (theme.palette.mode === "dark" ? "#111827" : "#f1f5f9"), borderRight: "1px solid", borderColor: (theme) => theme.palette.mode === "dark" ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)" }}>
                     <Box sx={{ fontSize: "12px", color: "text.primary" }}>{dayNum}</Box>
                     <Box sx={{ fontSize: "9px", color: "text.secondary", textTransform: "uppercase" }}>{weekDayName}</Box>
                     <Box sx={{ fontSize: "9px", color: "primary.main", fontWeight: "normal" }}>{monthName}</Box>
@@ -130,7 +176,7 @@ export default function ScheduleTable({ forms, cycleDays, onCellClick }: Schedul
               <React.Fragment key={group.sector}>
                 <SectorHeaderRow sector={group.sector} colSpan={totalColumns} />
                 {group.forms.map((form) => (
-                  <EmployeeRow key={form.id} form={form} cycleDays={cycleDays} onCellClick={onCellClick} />
+                  <EmployeeRow key={form.id} form={form} cycleDays={cycleDays} onCellClick={onCellClick} onHoursChange={onHoursChange} />
                 ))}
               </React.Fragment>
             ))}

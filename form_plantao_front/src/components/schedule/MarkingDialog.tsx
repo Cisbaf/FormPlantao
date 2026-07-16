@@ -236,24 +236,27 @@ export default function MarkingDialog({ editingCell, onClose, onSaved }: Marking
             <Divider />
 
             {/* Toggle 2º Plantão (24h) */}
-            <Box>
-              <Button
-                variant={useSecondShift ? "contained" : "outlined"}
-                color="secondary"
-                size="small"
-                onClick={() => {
-                  setUseSecondShift(!useSecondShift);
-                  if (!useSecondShift) setSelectedMarca2("F");
-                  else setSelectedMarca2("");
-                }}
-                sx={{ borderRadius: "8px" }}
-              >
-                {useSecondShift ? "✓ 2º Plantão Ativado (24h)" : "+ Adicionar 2º Plantão (24h)"}
-              </Button>
-              <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>
-                Ative se o funcionário é 24h e precisa de marcação para dois turnos no mesmo dia.
-              </Typography>
-            </Box>
+            {editingCell.form.horas >= 24 && (
+              <Box>
+                <Button
+                  variant={useSecondShift ? "contained" : "outlined"}
+                  color="secondary"
+                  size="small"
+                  onClick={() => {
+                    setUseSecondShift(!useSecondShift);
+                    if (!useSecondShift) setSelectedMarca2("F");
+                    else setSelectedMarca2("");
+                  }}
+                  sx={{ borderRadius: "8px" }}
+                >
+                  {useSecondShift ? "✓ 2º Plantão Ativado (24h)" : "+ Adicionar 2º Plantão (24h)"}
+                </Button>
+                <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>
+                  Ative se o funcionário é 24h e precisa de marcação para dois turnos no mesmo dia.
+                </Typography>
+              </Box>
+            )}
+
 
             {/* 2º Plantão (se ativo) */}
             {useSecondShift && (

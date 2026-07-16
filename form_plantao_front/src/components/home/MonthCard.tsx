@@ -1,19 +1,26 @@
-import React from "react";
-import {
-  Card, CardContent, CardActions, Typography, Button, Box, Divider, Chip,
-} from "@mui/material";
-import { CalendarMonth, ChevronRight, PeopleAlt, AccessTime } from "@mui/icons-material";
 import { GroupedMonth } from "@/lib/types";
+import { AccessTime, CalendarMonth, ChevronRight, Delete, PeopleAlt } from "@mui/icons-material";
+import {
+  Box,
+  Button,
+  Card,
+  CardActions,
+  CardContent,
+  Chip,
+  Divider,
+  Typography,
+} from "@mui/material";
 
 interface MonthCardProps {
   group: GroupedMonth;
   onClick: () => void;
+  onDelete: () => void;
 }
 
 /**
  * Card de resumo de um mês de referência na tela inicial.
  */
-export default function MonthCard({ group, onClick }: MonthCardProps) {
+export default function MonthCard({ group, onClick, onDelete }: MonthCardProps) {
   // Conta setores únicos
   const uniqueSectors = new Set(group.forms.map((f) => f.funcionario.locacao));
 
@@ -78,10 +85,16 @@ export default function MonthCard({ group, onClick }: MonthCardProps) {
         )}
       </CardContent>
 
-      <CardActions sx={{ p: 2, pt: 0, justifyContent: "flex-end" }}>
+      <CardActions sx={{ p: 2, pt: 0, justifyContent: "space-between" }}>
+
+        <Button color="error" onClick={onDelete} sx={{ minWidth: "auto" }}>
+          <Delete />
+        </Button>
+
         <Button size="medium" endIcon={<ChevronRight />} onClick={onClick} sx={{ borderRadius: "10px", px: 2 }}>
           Abrir Plantões
         </Button>
+
       </CardActions>
     </Card>
   );

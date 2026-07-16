@@ -3,7 +3,7 @@
 import React, { useState, useEffect, use } from "react";
 import { Box, CircularProgress, Paper, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
-import { fetchFormularios } from "@/lib/api";
+import { fetchFormularios, updateFormulario } from "@/lib/api"; // <-- Importe updateFormulario aqui
 import { FormularioUnico, EditingCell } from "@/lib/types";
 import { parseYearMonth, getDaysInCycle, formatDateToISO } from "@/lib/utils";
 import { parseLocalDate } from "@/lib/api";
@@ -59,6 +59,16 @@ export default function MesDetailPage({ params }: { params: Promise<{ yearMonth:
     });
   };
 
+  const handleHoursChange = async (form: FormularioUnico, newHoras: number) => {
+    try {
+      await updateFormulario(form.id!, { horas: newHoras });
+
+      setRefreshTrigger((prev) => prev + 1);
+    } catch (err) {
+      console.error("Erro ao atualizar horas:", err);
+    }
+  };
+
   // Filtrar formulários pela busca (nome, matrícula ou setor)
   const filteredForms = formularios.filter((f) => {
     const text = `${f.funcionario.nome} ${f.funcionario.locacao} ${f.funcionario.matricula}`.toLowerCase();
@@ -103,6 +113,7 @@ export default function MesDetailPage({ params }: { params: Promise<{ yearMonth:
           forms={filteredForms}
           cycleDays={cycleDays}
           onCellClick={handleCellClick}
+          onHoursChange={handleHoursChange} // <-- PASSA A FUNÇÃO AQUI
         />
       )}
 
