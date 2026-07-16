@@ -28,6 +28,11 @@ public class FormularioUnico {
     @OneToMany(mappedBy = "formularioUnico", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Marcacao> marcacoes = new LinkedHashSet<>();
 
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "horas_id")
+    @Builder.Default
+    private Horas horasTotais = new Horas();
+
     public void adicionarMarcacao(Marcacao marcacao) {
         marcacoes.add(marcacao);
         marcacao.setFormularioUnico(this);

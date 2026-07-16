@@ -18,6 +18,8 @@ public record FormularioDTO(
         Long funcionarioId,
         @NotNull
         @Size(max = 35)
-        List<Long> marcacoesId
+        List<Long> marcacoesId,
+        HorasDto horasDto
+
 ) {
 }

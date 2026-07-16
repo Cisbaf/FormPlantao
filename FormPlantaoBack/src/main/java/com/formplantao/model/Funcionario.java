@@ -22,7 +22,6 @@ public class Funcionario {
     private Long matricula;
     @Column(length = 20,  nullable = false)
     private String locacao;
-
     @JsonIgnore
     @OneToMany(cascade = CascadeType.ALL,  fetch = FetchType.EAGER)
     private List<FormularioUnico> formularios;

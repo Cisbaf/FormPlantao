@@ -98,16 +98,16 @@ public class FormularioService {
     }
 
     private List<Funcionario> destinatarios(Funcionario alvo) {
-        if (!isCuringaTodos(alvo)) {
+        if (isCoringaTodos(alvo)) {
             return List.of(alvo);
         }
         return funcionarioRepository.findAll().stream()
-                .filter(f -> !isCuringaTodos(f))
+                .filter(this::isCoringaTodos)
                 .toList();
     }
 
-    private boolean isCuringaTodos(Funcionario f) {
-        return NOME_TODOS.equals(f.getNome()) && MATRICULA_TODOS.equals(f.getMatricula());
+    private boolean isCoringaTodos(Funcionario f) {
+        return !NOME_TODOS.equals(f.getNome()) && MATRICULA_TODOS.equals(f.getMatricula());
     }
 
     private Set<Marcacao> buscarMarcacoes(List<Long> ids) {
@@ -127,5 +127,4 @@ public class FormularioService {
                 .marcacoesId(marcacoesIds)
                 .build();
     }
-
 }

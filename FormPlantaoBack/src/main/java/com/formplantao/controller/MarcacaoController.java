@@ -1,6 +1,7 @@
 package com.formplantao.controller;
 
 import com.formplantao.model.dto.MarcacaoDTO;
+import com.formplantao.model.dto.RelatorioLocacaoDTO;
 import com.formplantao.service.MarcacaoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.YearMonth;
 import java.util.List;
 
 @RestController
@@ -33,6 +35,14 @@ public class MarcacaoController {
     public ResponseEntity<List<MarcacaoDTO>> listarMarcacao() {
         List<MarcacaoDTO> marcacoes = marcacaoService.listarMarcacao();
         return ResponseEntity.ok(marcacoes);
+    }
+
+    @GetMapping("/relatorio-geral")
+    public ResponseEntity<List<RelatorioLocacaoDTO>> getRelatorioGeral(@RequestParam YearMonth data) {
+        if (data == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        return ResponseEntity.ok(marcacaoService.gerarRelatorioAgrupadoPorLocacao(data));
     }
 
     @DeleteMapping("/{id}")

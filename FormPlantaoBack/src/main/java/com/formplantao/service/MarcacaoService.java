@@ -1,14 +1,20 @@
 package com.formplantao.service;
 
+import com.formplantao.model.Horas;
 import com.formplantao.model.Marcacao;
 import com.formplantao.model.dto.MarcacaoDTO;
+import com.formplantao.model.dto.RelatorioLocacaoDTO;
 import com.formplantao.repository.FormularioUnicoRepository;
 import com.formplantao.repository.MarcacaoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -17,18 +23,26 @@ public class MarcacaoService {
     private final MarcacaoRepository marcacaoRepository;
     private final FormularioUnicoRepository formularioUnicoRepository;
 
+    @Transactional
     public MarcacaoDTO salvarMarcacao(MarcacaoDTO marcacaoDTO) {
         var form = formularioUnicoRepository.findById(marcacaoDTO.formId()).orElseThrow(
                 () -> new IllegalArgumentException("Formulário não encontrado.")
         );
 
-        // 1. Aplicação da Regra de Negócio: Validar ciclo do dia 16 ao 15
         LocalDate inicioCiclo = form.getDataReferencia().minusMonths(1).atDay(16);
         LocalDate fimCiclo = form.getDataReferencia().atDay(15);
 
         if (marcacaoDTO.dataMarcada().isBefore(inicioCiclo) || marcacaoDTO.dataMarcada().isAfter(fimCiclo)) {
             throw new IllegalArgumentException("A data está fora do período do formulário (16 a 15).");
         }
+
+        var horas = form.getHorasTotais();
+        if (horas == null) {
+            horas = new Horas();
+            form.setHorasTotais(horas);
+        }
+
+        switchMarcaAdd(marcacaoDTO.marca(), horas);
 
         var marcacao = Marcacao.builder()
                 .dataMarcada(marcacaoDTO.dataMarcada())
@@ -38,7 +52,6 @@ public class MarcacaoService {
 
         var newMarcacao = marcacaoRepository.save(marcacao);
 
-        // 2. Correção do mapeamento de retorno
         return MarcacaoDTO.builder()
                 .id(newMarcacao.getId())
                 .dataMarcada(newMarcacao.getDataMarcada())
@@ -47,13 +60,21 @@ public class MarcacaoService {
                 .build();
     }
 
-    // 3. Correção: Buscando a marcação existente e retornando o DTO
+    @Transactional
     public MarcacaoDTO atualizarMarcacao(Long id, MarcacaoDTO marcacaoDTO) {
         var marcacaoExistente = marcacaoRepository.findById(id).orElseThrow(
                 () -> new IllegalArgumentException("Marcação não encontrada.")
         );
 
-        // Atualiza apenas os dados permitidos
+        var marcaAntiga = marcacaoExistente.getMarca();
+        var horas = marcacaoExistente.getFormularioUnico().getHorasTotais();
+
+        // Se a marca mudou (ex: de 'F' para 'X'), remove a antiga e adiciona a nova
+        if (!Objects.equals(marcaAntiga, marcacaoDTO.marca())) {
+            switchMarcaSubtract(marcaAntiga, horas);
+            switchMarcaAdd(marcacaoDTO.marca(), horas);
+        }
+
         marcacaoExistente.setDataMarcada(marcacaoDTO.dataMarcada());
         marcacaoExistente.setMarca(marcacaoDTO.marca());
 
@@ -67,7 +88,16 @@ public class MarcacaoService {
                 .build();
     }
 
+    @Transactional
     public void deletarByIdMarcacao(Long id) {
+        var marcacao = marcacaoRepository.findById(id).orElseThrow(
+                () -> new IllegalArgumentException("Marcação não encontrada.")
+        );
+
+        var horas = marcacao.getFormularioUnico().getHorasTotais();
+
+        switchMarcaSubtract(marcacao.getMarca(), horas);
+
         marcacaoRepository.deleteById(id);
     }
 
@@ -81,5 +111,69 @@ public class MarcacaoService {
                         .formId(m.getFormularioUnico().getId())
                         .build())
                 .toList();
+    }
+
+    public List<RelatorioLocacaoDTO> gerarRelatorioAgrupadoPorLocacao(YearMonth dataReferencia) {
+        var formularios = formularioUnicoRepository.findByDataReferencia(dataReferencia);
+
+        // Agrupa os formulários pelo nome da locação do funcionário
+        var mapPorLocacao = formularios.stream()
+                .collect(Collectors.groupingBy(f -> f.getFuncionario().getLocacao()));
+
+        // Transforma o agrupamento no DTO de resposta somando as horas
+        return mapPorLocacao.entrySet().stream().map(entry -> {
+            String locacao = entry.getKey();
+            var forms = entry.getValue();
+
+            long completas = forms.stream().mapToLong(f -> f.getHorasTotais().getHorasCompletas()).sum();
+            long extras = forms.stream().mapToLong(f -> f.getHorasTotais().getHorasExtras()).sum();
+            long ferias = forms.stream().mapToLong(f -> f.getHorasTotais().getHorasFerias()).sum();
+            long ausentes = forms.stream().mapToLong(f -> f.getHorasTotais().getHorasAusentes()).sum();
+
+            return new RelatorioLocacaoDTO(locacao, completas, extras, ferias, ausentes);
+        }).toList();
+    }
+
+
+    private static void switchMarcaAdd(String marca, Horas horas) {
+        if (marca == null || marca.isBlank()) return;
+
+        for (char c : marca.toLowerCase().toCharArray()) {
+            switch (c) {
+                case 'x':
+                    horas.setHorasCompletas(horas.getHorasCompletas() != null ? horas.getHorasCompletas() + 1L : 1L);
+                    break;
+                case 'f':
+                    horas.setHorasFerias(horas.getHorasFerias() != null ? horas.getHorasFerias() + 1L : 1L);
+                    break;
+                case 'e':
+                    horas.setHorasExtras(horas.getHorasExtras() != null ? horas.getHorasExtras() + 1L : 1L);
+                    break;
+                case 'a':
+                    horas.setHorasAusentes(horas.getHorasAusentes() != null ? horas.getHorasAusentes() + 1L : 1L);
+                    break;
+            }
+        }
+    }
+
+    private static void switchMarcaSubtract(String marca, Horas horas) {
+        if (marca == null || marca.isBlank()) return;
+
+        for (char c : marca.toLowerCase().toCharArray()) {
+            switch (c) {
+                case 'x':
+                    horas.setHorasCompletas((horas.getHorasCompletas() != null && horas.getHorasCompletas() > 0) ? horas.getHorasCompletas() - 1L : 0L);
+                    break;
+                case 'f':
+                    horas.setHorasFerias((horas.getHorasFerias() != null && horas.getHorasFerias() > 0) ? horas.getHorasFerias() - 1L : 0L);
+                    break;
+                case 'e':
+                    horas.setHorasExtras((horas.getHorasExtras() != null && horas.getHorasExtras() > 0) ? horas.getHorasExtras() - 1L : 0L);
+                    break;
+                case 'a':
+                    horas.setHorasAusentes((horas.getHorasAusentes() != null && horas.getHorasAusentes() > 0) ? horas.getHorasAusentes() - 1L : 0L);
+                    break;
+            }
+        }
     }
 }
