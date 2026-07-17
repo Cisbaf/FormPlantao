@@ -301,7 +301,7 @@ export default function RelatoriosPage() {
                     {kpi.icon}
                   </Box>
                   <Box>
-                    <Typography variant="h5" sx={{ fontWeight: 800 }}>{kpi.value}h</Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 800 }}>{kpi.value * 12}h</Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>{kpi.label}</Typography>
                   </Box>
                 </Paper>
@@ -392,20 +392,20 @@ export default function RelatoriosPage() {
                       locacoesResumo.map((loc, idx) => (
                         <TableRow key={idx} hover>
                           <TableCell sx={{ fontWeight: 700, color: "primary.main" }}>{loc.locacao}</TableCell>
-                          <TableCell align="center"><Typography variant="body2" sx={{ fontWeight: 600 }}>{loc.totalPlantoes}h</Typography></TableCell>
+                          <TableCell align="center"><Typography variant="body2" sx={{ fontWeight: 600 }}>{loc.totalPlantoes * 12}h</Typography></TableCell>
                           <TableCell align="center">
                             <Typography variant="body2" sx={{ fontWeight: 600, color: loc.totalExtras > 0 ? "success.main" : "text.disabled" }}>
-                              {loc.totalExtras > 0 ? `+${loc.totalExtras}h` : "0h"}
+                              {loc.totalExtras > 0 ? `+${loc.totalExtras * 12}h` : "0h"}
                             </Typography>
                           </TableCell>
                           <TableCell align="center">
                             <Typography variant="body2" sx={{ fontWeight: 600, color: loc.totalFerias > 0 ? "info.main" : "text.disabled" }}>
-                              {loc.totalFerias}h
+                              {loc.totalFerias * 12}h
                             </Typography>
                           </TableCell>
                           <TableCell align="center">
                             <Typography variant="body2" sx={{ fontWeight: 600, color: loc.totalAusentes > 0 ? "error.main" : "text.disabled" }}>
-                              {loc.totalAusentes}h
+                              {loc.totalAusentes * 12}h
                             </Typography>
                           </TableCell>
                         </TableRow>
@@ -451,20 +451,20 @@ export default function RelatoriosPage() {
                           <TableCell><Chip label={func.horasDia} size="small" variant="outlined" color="primary" /></TableCell>
 
                           <TableCell><Chip label={func.locacao} size="small" variant="outlined" color="primary" /></TableCell>
-                          <TableCell align="center"><Typography variant="body2" sx={{ fontWeight: 600 }}>{func.horasPlantoes}h</Typography></TableCell>
+                          <TableCell align="center"><Typography variant="body2" sx={{ fontWeight: 600 }}>{func.horasPlantoes * 12}h</Typography></TableCell>
                           <TableCell align="center">
                             <Typography variant="body2" sx={{ fontWeight: 600, color: func.horasExtras > 0 ? "success.main" : "text.disabled" }}>
-                              {func.horasExtras}h
+                              {func.horasExtras > 0 ? `+${func.horasExtras * 12}h` : "0h"}
                             </Typography>
                           </TableCell>
                           <TableCell align="center">
                             <Typography variant="body2" sx={{ fontWeight: 600, color: func.horasFerias > 0 ? "info.main" : "text.disabled" }}>
-                              {func.horasFerias}h
+                              {func.horasFerias * 12}h
                             </Typography>
                           </TableCell>
                           <TableCell align="center">
                             <Typography variant="body2" sx={{ fontWeight: 600, color: func.horasAusentes > 0 ? "error.main" : "text.disabled" }}>
-                              {func.horasAusentes}h
+                              {func.horasAusentes * 12}h
                             </Typography>
                           </TableCell>
                         </TableRow>

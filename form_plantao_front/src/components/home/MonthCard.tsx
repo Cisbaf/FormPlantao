@@ -63,13 +63,6 @@ export default function MonthCard({ group, onClick, onDelete }: MonthCardProps) 
             </Box>
             <Typography variant="h5" sx={{ mt: 0.5, color: "text.primary", fontWeight: 750 }}>{group.forms.length}</Typography>
           </Box>
-          <Box>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, color: "text.secondary" }}>
-              <AccessTime fontSize="small" />
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>Carga Total</Typography>
-            </Box>
-            <Typography variant="h5" sx={{ mt: 0.5, color: "text.primary", fontWeight: 750 }}>{group.totalHours}h</Typography>
-          </Box>
         </Box>
 
         {/* Setores presentes */}

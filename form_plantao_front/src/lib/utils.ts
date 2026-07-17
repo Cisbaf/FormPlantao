@@ -134,11 +134,9 @@ export function groupFormulariosByMonth(formularios: FormularioUnico[]): Grouped
         yearMonth: formatted,
         label,
         forms: [],
-        totalHours: 0,
       };
     }
     groups[formatted].forms.push(form);
-    groups[formatted].totalHours += form.horas;
   });
 
   return Object.values(groups).sort((a, b) => b.yearMonth.localeCompare(a.yearMonth));

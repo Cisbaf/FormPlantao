@@ -315,7 +315,19 @@ export default function MarkingDialog({ editingCell, onClose, onSaved }: Marking
                     key={"desmarcar"}
                     value=""
                     control={<Radio size="small" />}
-                    label="Desmarcar"
+                    label={
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        <Box
+                          sx={{
+                            width: 16,
+                            height: 16,
+                            borderRadius: "4px",
+                            border: "2px solid",
+                            borderColor: (theme) => theme.palette.mode === "dark" ? "white" : "black",
+                          }}
+                        />
+                        Desmarcar
+                      </Box>}
                   />
                 </RadioGroup>
               </FormControl>

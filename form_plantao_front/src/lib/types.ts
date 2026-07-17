@@ -68,7 +68,6 @@ export interface GroupedMonth {
   yearMonth: string; // "YYYY-MM"
   label: string; // "Julho de 2026"
   forms: FormularioUnico[];
-  totalHours: number;
 }
 
 export interface SectorGroup {
