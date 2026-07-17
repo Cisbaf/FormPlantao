@@ -37,7 +37,7 @@ public class FormularioUnico {
         if (this.horasTotais == null) {
             this.horasTotais = new Horas();
         }
-        if (this.horasTotais.getHorasCompletas() == null) this.horasTotais.setHorasCompletas(0L);
+        if (this.horasTotais.getHorasPlantoes() == null) this.horasTotais.setHorasPlantoes(0L);
         if (this.horasTotais.getHorasExtras() == null) this.horasTotais.setHorasExtras(0L);
         if (this.horasTotais.getHorasFerias() == null) this.horasTotais.setHorasFerias(0L);
         if (this.horasTotais.getHorasAusentes() == null) this.horasTotais.setHorasAusentes(0L);

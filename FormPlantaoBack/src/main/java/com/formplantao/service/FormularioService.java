@@ -31,7 +31,7 @@ public class FormularioService {
         return formularioUnicoRepository.findAll().stream()
                 .map(f -> {
                     Horas h = f.getHorasTotais();
-                    HorasDto horasDto = h != null ? new HorasDto(h.getId(), h.getHorasCompletas(), h.getHorasExtras(), h.getHorasFerias(), h.getHorasAusentes()) : null;
+                    HorasDto horasDto = h != null ? new HorasDto(h.getId(), h.getHorasPlantoes(), h.getHorasExtras(), h.getHorasFerias(), h.getHorasAusentes()) : null;
                     return FormularioDTO.builder()
                             .id(f.getId())
                             .horas(f.getHoras())
@@ -128,7 +128,7 @@ public class FormularioService {
                 : new ArrayList<>();
 
         Horas h = entity.getHorasTotais();
-        HorasDto horasDto = h != null ? new HorasDto(h.getId(), h.getHorasCompletas(), h.getHorasExtras(), h.getHorasFerias(), h.getHorasAusentes()) : null;
+        HorasDto horasDto = h != null ? new HorasDto(h.getId(), h.getHorasPlantoes(), h.getHorasExtras(), h.getHorasFerias(), h.getHorasAusentes()) : null;
 
         return FormularioDTO.builder()
                 .id(entity.getId())

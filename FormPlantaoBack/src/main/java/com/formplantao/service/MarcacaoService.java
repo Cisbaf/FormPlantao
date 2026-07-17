@@ -125,7 +125,7 @@ public class MarcacaoService {
             String locacao = entry.getKey();
             var forms = entry.getValue();
 
-            long completas = forms.stream().mapToLong(f -> f.getHorasTotais().getHorasCompletas()).sum();
+            long completas = forms.stream().mapToLong(f -> f.getHorasTotais().getHorasPlantoes()).sum();
             long extras = forms.stream().mapToLong(f -> f.getHorasTotais().getHorasExtras()).sum();
             long ferias = forms.stream().mapToLong(f -> f.getHorasTotais().getHorasFerias()).sum();
             long ausentes = forms.stream().mapToLong(f -> f.getHorasTotais().getHorasAusentes()).sum();
@@ -141,7 +141,7 @@ public class MarcacaoService {
         for (char c : marca.toLowerCase().toCharArray()) {
             switch (c) {
                 case 'x':
-                    horas.setHorasCompletas(horas.getHorasCompletas() != null ? horas.getHorasCompletas() + 1L : 1L);
+                    horas.setHorasPlantoes(horas.getHorasPlantoes() != null ? horas.getHorasPlantoes() + 1L : 1L);
                     break;
                 case 'f':
                     horas.setHorasFerias(horas.getHorasFerias() != null ? horas.getHorasFerias() + 1L : 1L);
@@ -162,7 +162,7 @@ public class MarcacaoService {
         for (char c : marca.toLowerCase().toCharArray()) {
             switch (c) {
                 case 'x':
-                    horas.setHorasCompletas((horas.getHorasCompletas() != null && horas.getHorasCompletas() > 0) ? horas.getHorasCompletas() - 1L : 0L);
+                    horas.setHorasPlantoes((horas.getHorasPlantoes() != null && horas.getHorasPlantoes() > 0) ? horas.getHorasPlantoes() - 1L : 0L);
                     break;
                 case 'f':
                     horas.setHorasFerias((horas.getHorasFerias() != null && horas.getHorasFerias() > 0) ? horas.getHorasFerias() - 1L : 0L);
