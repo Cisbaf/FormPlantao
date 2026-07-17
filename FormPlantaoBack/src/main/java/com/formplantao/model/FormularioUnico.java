@@ -33,6 +33,17 @@ public class FormularioUnico {
     @Builder.Default
     private Horas horasTotais = new Horas();
 
+    public Horas getHorasTotais() {
+        if (this.horasTotais == null) {
+            this.horasTotais = new Horas();
+        }
+        if (this.horasTotais.getHorasCompletas() == null) this.horasTotais.setHorasCompletas(0L);
+        if (this.horasTotais.getHorasExtras() == null) this.horasTotais.setHorasExtras(0L);
+        if (this.horasTotais.getHorasFerias() == null) this.horasTotais.setHorasFerias(0L);
+        if (this.horasTotais.getHorasAusentes() == null) this.horasTotais.setHorasAusentes(0L);
+        return this.horasTotais;
+    }
+
     public void adicionarMarcacao(Marcacao marcacao) {
         marcacoes.add(marcacao);
         marcacao.setFormularioUnico(this);

@@ -3,7 +3,9 @@ package com.formplantao.service;
 import com.formplantao.model.FormularioUnico;
 import com.formplantao.model.Funcionario;
 import com.formplantao.model.Marcacao;
+import com.formplantao.model.Horas;
 import com.formplantao.model.dto.FormularioDTO;
+import com.formplantao.model.dto.HorasDto;
 import com.formplantao.repository.FormularioUnicoRepository;
 import com.formplantao.repository.FuncionarioRepository;
 import com.formplantao.repository.MarcacaoRepository;
@@ -27,13 +29,18 @@ public class FormularioService {
 
     public List<FormularioDTO> getAllDTO() {
         return formularioUnicoRepository.findAll().stream()
-                .map(f -> FormularioDTO.builder()
-                        .id(f.getId())
-                        .horas(f.getHoras())
-                        .dataReferencia(f.getDataReferencia())
-                        .funcionarioId(f.getFuncionario().getId())
-                        .marcacoesId(f.getMarcacoes().stream().map(Marcacao::getId).toList())
-                        .build())
+                .map(f -> {
+                    Horas h = f.getHorasTotais();
+                    HorasDto horasDto = h != null ? new HorasDto(h.getId(), h.getHorasCompletas(), h.getHorasExtras(), h.getHorasFerias(), h.getHorasAusentes()) : null;
+                    return FormularioDTO.builder()
+                            .id(f.getId())
+                            .horas(f.getHoras())
+                            .dataReferencia(f.getDataReferencia())
+                            .funcionarioId(f.getFuncionario().getId())
+                            .marcacoesId(f.getMarcacoes().stream().map(Marcacao::getId).toList())
+                            .horasDto(horasDto)
+                            .build();
+                })
                 .toList();
     }
 
@@ -120,12 +127,16 @@ public class FormularioService {
                 ? entity.getMarcacoes().stream().map(Marcacao::getId).collect(Collectors.toList())
                 : new ArrayList<>();
 
+        Horas h = entity.getHorasTotais();
+        HorasDto horasDto = h != null ? new HorasDto(h.getId(), h.getHorasCompletas(), h.getHorasExtras(), h.getHorasFerias(), h.getHorasAusentes()) : null;
+
         return FormularioDTO.builder()
                 .id(entity.getId())
                 .horas(entity.getHoras())
                 .dataReferencia(entity.getDataReferencia())
                 .funcionarioId(entity.getFuncionario().getId())
                 .marcacoesId(marcacoesIds)
+                .horasDto(horasDto)
                 .build();
     }
 }

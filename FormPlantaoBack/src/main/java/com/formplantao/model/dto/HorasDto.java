@@ -4,7 +4,7 @@ public record HorasDto(
          Long id,
          Long horasCompletas,
          Long horasExtras,
-         Long horasFaltantes,
+         Long horasFerias,
          Long horasAusentes
 ) {
         
