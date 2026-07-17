@@ -1,8 +1,8 @@
-import { FormularioUnico, FormularioDTO, MarcacaoDTO, Funcionario } from "./types";
+import { FormularioUnico, FormularioDTO, MarcacaoDTO, Funcionario, RelatorioLocacaoDTO } from "./types";
 import { API_BASE_URL } from "./constants";
 
 // Re-export types and utils for backwards compatibility
-export type { Funcionario, FormularioUnico, Marcacao, FormularioDTO, MarcacaoDTO } from "./types";
+export type { Funcionario, FormularioUnico, Marcacao, FormularioDTO, MarcacaoDTO, RelatorioLocacaoDTO } from "./types";
 export { parseYearMonth, parseLocalDate } from "./utils";
 
 // ========================
@@ -132,5 +132,24 @@ export async function updateMarcacao(id: number, dto: MarcacaoDTO): Promise<Marc
   if (!res.ok) {
     throw new Error("Erro ao atualizar marcação");
   }
+  return res.json();
+}
+
+export async function fetchRelatorioGeral(data: string): Promise<RelatorioLocacaoDTO[]> {
+  // Garantimos que a string terá apenas o formato YYYY-MM exigido pelo YearMonth do Java
+  // Caso venha algo como "2026-07-20", o split vai pegar apenas "2026-07"
+  const anoMes = data ? data.substring(0, 7) : "";
+  const url = `${API_BASE_URL}/marcacoes/relatorio-geral?data=${anoMes}`;
+
+  const res = await fetch(url, {
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "No text");
+    console.error(`Erro na API relatorio-geral: Código ${res.status} URL: ${url} Response: ${text}`);
+    throw new Error(`Erro ao buscar relatório geral: ${res.status}`);
+  }
+
   return res.json();
 }

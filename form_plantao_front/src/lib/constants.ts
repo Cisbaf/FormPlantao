@@ -33,5 +33,5 @@ export const MONTH_NAMES_SHORT = [
 
 export const WEEKDAY_NAMES_SHORT = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
-// API base URL
-export const API_BASE_URL = "http://localhost:8080";
+// API base URL apontando para os Routes do Next.js
+export const API_BASE_URL = "/api";

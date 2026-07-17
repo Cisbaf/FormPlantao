@@ -15,12 +15,21 @@ export interface Marcacao {
   marca: string; // String com até 2 caracteres (ex: "T", "TF" para 24h com dois plantões)
 }
 
+export interface Horas {
+  id?: number;
+  horasCompletas: number;
+  horasExtras: number;
+  horasFerias: number;
+  horasAusentes: number;
+}
+
 export interface FormularioUnico {
   id?: number;
   horas: number;
   dataReferencia: any; // Can be string "YYYY-MM" or array [YYYY, MM]
   funcionario: Funcionario;
   marcacoes?: Marcacao[];
+  horasTotais?: Horas;
 }
 
 // ========================
@@ -33,6 +42,7 @@ export interface FormularioDTO {
   dataReferencia: string; // "YYYY-MM"
   funcionarioId: number;
   marcacoesId: number[];
+  horasDto?: Horas;
 }
 
 export interface MarcacaoDTO {
@@ -40,6 +50,14 @@ export interface MarcacaoDTO {
   dataMarcada: string; // "YYYY-MM-DD"
   marca: string; // String com até 2 caracteres
   formId: number;
+}
+
+export interface RelatorioLocacaoDTO {
+  locacao: string;
+  totalCompletas: number;
+  totalExtras: number;
+  totalFerias: number;
+  totalAusentes: number;
 }
 
 // ========================

@@ -89,18 +89,18 @@ export default function MarkingDialog({ editingCell, onClose, onSaved }: Marking
     // Monta a marca final
     let marca1 = selectedMarca1 === "CUSTOM" ? customMarca.toUpperCase() : selectedMarca1;
 
-    if (!marca1 || marca1.length !== 1) {
-      alert("A marca do 1º plantão deve conter exatamente 1 caractere.");
-      return;
-    }
+    // if (!marca1 || marca1.length !== 1) {
+    //   alert("A marca do 1º plantão deve conter exatamente 1 caractere.");
+    //   return;
+    // }
 
     let finalMarca = marca1;
 
     if (useSecondShift) {
-      if (!selectedMarca2 || selectedMarca2.length !== 1) {
-        alert("Selecione a marca do 2º plantão (1 caractere).");
-        return;
-      }
+      // if (!selectedMarca2 || selectedMarca2.length !== 1) {
+      //   alert("Selecione a marca do 2º plantão (1 caractere).");
+      //   return;
+      // }
       finalMarca = marca1 + selectedMarca2;
     }
 
@@ -208,6 +208,27 @@ export default function MarkingDialog({ editingCell, onClose, onSaved }: Marking
                     }
                   />
                 ))}
+                {markOptions && (
+                  <FormControlLabel
+                    key={"desmarcar"}
+                    value=""
+                    control={<Radio size="small" />}
+                    label={
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        <Box
+                          sx={{
+                            width: 16,
+                            height: 16,
+                            borderRadius: "4px",
+                            border: "2px solid",
+                            borderColor: (theme) => theme.palette.mode === "dark" ? "white" : "black",
+                          }}
+                        />
+                        Desmarcar
+                      </Box>}
+                  />
+                )}
+
                 <FormControlLabel
                   value="CUSTOM"
                   control={<Radio size="small" />}
@@ -290,6 +311,12 @@ export default function MarkingDialog({ editingCell, onClose, onSaved }: Marking
                       }
                     />
                   ))}
+                  <FormControlLabel
+                    key={"desmarcar"}
+                    value=""
+                    control={<Radio size="small" />}
+                    label="Desmarcar"
+                  />
                 </RadioGroup>
               </FormControl>
             )}

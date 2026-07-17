@@ -1,12 +1,20 @@
-import React, { useState } from "react";
-import {
-  Paper, TableContainer, Table, TableHead, TableRow, TableCell,
-  TableBody, Box, Typography, Avatar, Chip, Menu, MenuItem
-} from "@mui/material";
-import { FormularioUnico, EditingCell } from "@/lib/types";
-import { SectorGroup } from "@/lib/types";
-import { getDayHeader, formatDateToISO, groupFormsBySector } from "@/lib/utils";
 import { parseLocalDate } from "@/lib/api";
+import { FormularioUnico } from "@/lib/types";
+import { formatDateToISO, getDayHeader, groupFormsBySector } from "@/lib/utils";
+import {
+  Avatar,
+  Box,
+  Chip, Menu, MenuItem,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead, TableRow,
+  Tooltip,
+  Typography
+} from "@mui/material";
+import React, { useState } from "react";
 import MarkingBadge from "./MarkingBadge";
 
 interface ScheduleTableProps {
@@ -112,6 +120,20 @@ function EmployeeRow({ form, cycleDays, onCellClick, onHoursChange }: { form: Fo
         </Menu>
       </TableCell>
 
+      {/* Totais de horas / plantões */}
+      <TableCell align="center" sx={{ borderRight: "1px solid rgba(224,224,224,0.3)", fontWeight: 700, color: "#3b82f6" }}>
+        {form.horasTotais?.horasCompletas ?? 0}
+      </TableCell>
+      <TableCell align="center" sx={{ borderRight: "1px solid rgba(224,224,224,0.3)", fontWeight: 700, color: "#8b5cf6" }}>
+        {form.horasTotais?.horasExtras ?? 0}
+      </TableCell>
+      <TableCell align="center" sx={{ borderRight: "1px solid rgba(224,224,224,0.3)", fontWeight: 700, color: "#10b981" }}>
+        {form.horasTotais?.horasFerias ?? 0}
+      </TableCell>
+      <TableCell align="center" sx={{ borderRight: "1px solid rgba(224,224,224,0.3)", fontWeight: 700, color: "#ef4444" }}>
+        {form.horasTotais?.horasAusentes ?? 0}
+      </TableCell>
+
       {/* Células de marcação */}
       {cycleDays.map((day, idx) => {
         const dateStr = formatDateToISO(day);
@@ -145,7 +167,7 @@ function EmployeeRow({ form, cycleDays, onCellClick, onHoursChange }: { form: Fo
  */
 export default function ScheduleTable({ forms, cycleDays, onCellClick, onHoursChange }: ScheduleTableProps) {
   const sectorGroups = groupFormsBySector(forms);
-  const totalColumns = 2 + cycleDays.length; // Nome + Horas + dias
+  const totalColumns = 6 + cycleDays.length; // Nome + Horas + X + E + F + A + dias
 
   return (
     <Paper elevation={0} sx={{ borderRadius: "16px", border: "1px solid", borderColor: (theme) => theme.palette.mode === "dark" ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)", overflow: "hidden" }}>
@@ -158,6 +180,26 @@ export default function ScheduleTable({ forms, cycleDays, onCellClick, onHoursCh
               </TableCell>
               <TableCell align="center" sx={{ fontWeight: 800, zIndex: 5, background: (theme) => theme.palette.mode === "dark" ? "#111827" : "#f1f5f9", minWidth: "70px", borderRight: "1px solid rgba(224,224,224,0.3)" }}>
                 Horas
+              </TableCell>
+              <TableCell align="center" sx={{ fontWeight: 800, zIndex: 5, background: (theme) => theme.palette.mode === "dark" ? "#111827" : "#f1f5f9", minWidth: "40px", borderRight: "1px solid rgba(224,224,224,0.3)" }}>
+                <Tooltip title="Plantão 12h (X)">
+                  <Typography variant="body2" sx={{ fontWeight: 800, color: "#3b82f6", cursor: "help" }}>X</Typography>
+                </Tooltip>
+              </TableCell>
+              <TableCell align="center" sx={{ fontWeight: 800, zIndex: 5, background: (theme) => theme.palette.mode === "dark" ? "#111827" : "#f1f5f9", minWidth: "40px", borderRight: "1px solid rgba(224,224,224,0.3)" }}>
+                <Tooltip title="Plantão Extra (E)">
+                  <Typography variant="body2" sx={{ fontWeight: 800, color: "#8b5cf6", cursor: "help" }}>E</Typography>
+                </Tooltip>
+              </TableCell>
+              <TableCell align="center" sx={{ fontWeight: 800, zIndex: 5, background: (theme) => theme.palette.mode === "dark" ? "#111827" : "#f1f5f9", minWidth: "40px", borderRight: "1px solid rgba(224,224,224,0.3)" }}>
+                <Tooltip title="Férias (F)">
+                  <Typography variant="body2" sx={{ fontWeight: 800, color: "#10b981", cursor: "help" }}>F</Typography>
+                </Tooltip>
+              </TableCell>
+              <TableCell align="center" sx={{ fontWeight: 800, zIndex: 5, background: (theme) => theme.palette.mode === "dark" ? "#111827" : "#f1f5f9", minWidth: "40px", borderRight: "1px solid rgba(224,224,224,0.3)" }}>
+                <Tooltip title="Ausência (A)">
+                  <Typography variant="body2" sx={{ fontWeight: 800, color: "#ef4444", cursor: "help" }}>A</Typography>
+                </Tooltip>
               </TableCell>
               {cycleDays.map((day, idx) => {
                 const { dayNum, monthName, weekDayName, isWeekend } = getDayHeader(day);
