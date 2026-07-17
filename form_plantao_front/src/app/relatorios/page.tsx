@@ -4,30 +4,33 @@ import DashboardLayout from "@/components/DashboardLayout";
 import {
   AccessTime,
   AddCircleOutlineOutlined,
+  AssessmentOutlined,
   BeachAccess,
   Domain,
   ErrorOutlineOutlined,
   Person,
-  AssessmentOutlined,
 } from "@mui/icons-material";
 import {
   Avatar,
   Box,
   Chip,
   CircularProgress,
+  FormControl,
   Grid,
+  InputLabel,
+  MenuItem,
   Paper,
+  Select,
+  Tab,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  TextField,
-  Typography,
-  useTheme,
   Tabs,
-  Tab,
+  Typography,
+  useTheme
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import {
@@ -48,7 +51,7 @@ import {
 import { fetchFormularios, fetchRelatorioGeral } from "@/lib/api";
 
 const CORES = {
-  completas: "#3b82f6",
+  plantoes: "#3b82f6",
   extras: "#22c55e",
   ferias: "#0ea5e9",
   ausentes: "#ef4444",
@@ -56,7 +59,7 @@ const CORES = {
 
 interface LocacaoResumo {
   locacao: string;
-  totalCompletas: number;
+  totalPlantoes: number;
   totalExtras: number;
   totalFerias: number;
   totalAusentes: number;
@@ -67,7 +70,7 @@ interface FuncionarioDetalhado {
   matricula: string | number;
   locacao: string;
   horasDia: number;
-  horasCompletas: number;
+  horasPlantoes: number;
   horasExtras: number;
   horasFerias: number;
   horasAusentes: number;
@@ -101,6 +104,8 @@ export default function RelatoriosPage() {
   const [locacoesResumo, setLocacoesResumo] = useState<LocacaoResumo[]>([]);
   const [funcionariosDetalhado, setFuncionariosDetalhado] = useState<FuncionarioDetalhado[]>([]);
   const [tabValue, setTabValue] = useState(0);
+  const [mesesDisponiveis, setMesesDisponiveis] = useState<string[]>([]);
+
 
   const [mesReferencia, setMesReferencia] = useState(() => {
     const now = new Date();
@@ -132,20 +137,22 @@ export default function RelatoriosPage() {
             matricula: f.funcionario.matricula,
             horasDia: f.horas,
             locacao: f.funcionario.locacao,
-            horasCompletas: f.horasTotais?.horasCompletas || 0,
+            horasPlantoes: f.horasTotais?.horasPlantoes || 0,
             horasExtras: f.horasTotais?.horasExtras || 0,
             horasFerias: f.horasTotais?.horasFerias || 0,
             horasAusentes: f.horasTotais?.horasAusentes || 0,
           }));
 
+
         setFuncionariosDetalhado(funcionariosMapeados);
+
 
         try {
           const dadosLocacao = await fetchRelatorioGeral(mesReferencia);
           if (Array.isArray(dadosLocacao) && dadosLocacao.length > 0) {
             const locacoesMapeadas: LocacaoResumo[] = dadosLocacao.map((item) => ({
               locacao: item.locacao,
-              totalCompletas: item.totalCompletas ?? 0, // Ajustado caso a API mande 'completas' e não 'totalCompletas'
+              totalPlantoes: item.totalPlantoes ?? 0, // Ajustado caso a API mande 'plantoes' e não 'totalPlantoes'
               totalExtras: item.totalExtras ?? 0,
               totalFerias: item.totalFerias ?? 0,
               totalAusentes: item.totalAusentes ?? 0,
@@ -157,9 +164,9 @@ export default function RelatoriosPage() {
         } catch (apiError) {
           const agrupadoPorLocacao = funcionariosMapeados.reduce((acc, func) => {
             if (!acc[func.locacao]) {
-              acc[func.locacao] = { locacao: func.locacao, totalCompletas: 0, totalExtras: 0, totalFerias: 0, totalAusentes: 0 };
+              acc[func.locacao] = { locacao: func.locacao, totalPlantoes: 0, totalExtras: 0, totalFerias: 0, totalAusentes: 0 };
             }
-            acc[func.locacao].totalCompletas += func.horasCompletas;
+            acc[func.locacao].totalPlantoes += func.horasPlantoes;
             acc[func.locacao].totalExtras += func.horasExtras;
             acc[func.locacao].totalFerias += func.horasFerias;
             acc[func.locacao].totalAusentes += func.horasAusentes;
@@ -178,19 +185,40 @@ export default function RelatoriosPage() {
     carregarDados();
   }, [mesReferencia]);
 
+  useEffect(() => {
+    const carregarMesesDisponiveis = async () => {
+      try {
+        const dadosFormularios = await fetchFormularios();
+        const mesesUnicos = Array.from(
+          new Set(
+            dadosFormularios.map((f) =>
+              Array.isArray(f.dataReferencia)
+                ? `${f.dataReferencia[0]}-${String(f.dataReferencia[1]).padStart(2, "0")}`
+                : f.dataReferencia
+            )
+          )
+        ).sort((a, b) => (a < b ? 1 : -1));
+        setMesesDisponiveis(mesesUnicos);
+      } catch (error) {
+        console.error("Erro ao carregar meses disponíveis:", error);
+      }
+    };
+    carregarMesesDisponiveis();
+  }, []);
+
   const totaisGerais = locacoesResumo.reduce(
     (acc, loc) => {
-      acc.completas += loc.totalCompletas;
+      acc.plantoes += loc.totalPlantoes;
       acc.extras += loc.totalExtras;
       acc.ferias += loc.totalFerias;
       acc.ausentes += loc.totalAusentes;
       return acc;
     },
-    { completas: 0, extras: 0, ferias: 0, ausentes: 0 }
+    { plantoes: 0, extras: 0, ferias: 0, ausentes: 0 }
   );
 
   const pieData = [
-    { name: "Completas", value: totaisGerais.completas, color: CORES.completas },
+    { name: "Plantões 12h", value: totaisGerais.plantoes, color: CORES.plantoes },
     { name: "Extras", value: totaisGerais.extras, color: CORES.extras },
     { name: "Férias/Folga", value: totaisGerais.ferias, color: CORES.ferias },
     { name: "Faltas", value: totaisGerais.ausentes, color: CORES.ausentes },
@@ -198,7 +226,7 @@ export default function RelatoriosPage() {
 
   const barData = locacoesResumo.map((loc) => ({
     locacao: loc.locacao,
-    Completas: loc.totalCompletas,
+    Plantoes: loc.totalPlantoes,
     Extras: loc.totalExtras,
     Férias: loc.totalFerias,
     Faltas: loc.totalAusentes,
@@ -217,14 +245,28 @@ export default function RelatoriosPage() {
           </Typography>
         </Box>
 
-        <TextField
-          type="month"
-          label="Mês de Referência"
-          value={mesReferencia}
-          onChange={(e) => setMesReferencia(e.target.value)}
-          slotProps={{ inputLabel: { shrink: true } }}
-          size="small"
-        />
+        {/* O seu Select original de volta aqui! */}
+        <FormControl size="small" sx={{ minWidth: 200 }}>
+          <InputLabel id="mes-select-label">Mês de Referência</InputLabel>
+          <Select
+            labelId="mes-select-label"
+            value={mesReferencia}
+            label="Mês de Referência"
+            onChange={(e) => setMesReferencia(e.target.value as string)}
+          >
+            {mesesDisponiveis.map((mes) => (
+              <MenuItem key={mes} value={mes}>
+                {mes}
+              </MenuItem>
+            ))}
+            {/* Mantém o valor selecionado se ele ainda não estiver na lista de carregados */}
+            {!mesesDisponiveis.includes(mesReferencia) && (
+              <MenuItem key={mesReferencia} value={mesReferencia}>
+                {mesReferencia}
+              </MenuItem>
+            )}
+          </Select>
+        </FormControl>
       </Box>
 
       {loading ? (
@@ -236,7 +278,7 @@ export default function RelatoriosPage() {
           {/* NOVA SEÇÃO: KPIs GERAIS (Total do Mês) */}
           <Grid container spacing={2} sx={{ mb: 4 }}>
             {[
-              { label: "Total Completas", value: totaisGerais.completas, color: CORES.completas, icon: <AccessTime /> },
+              { label: "Total Plantões 12h", value: totaisGerais.plantoes, color: CORES.plantoes, icon: <AccessTime /> },
               { label: "Total Extras", value: totaisGerais.extras, color: CORES.extras, icon: <AddCircleOutlineOutlined /> },
               { label: "Total Férias/Folga", value: totaisGerais.ferias, color: CORES.ferias, icon: <BeachAccess /> },
               { label: "Total Faltas", value: totaisGerais.ausentes, color: CORES.ausentes, icon: <ErrorOutlineOutlined /> },
@@ -310,7 +352,7 @@ export default function RelatoriosPage() {
                       <YAxis tick={{ fontSize: 12, fill: theme.palette.text.secondary }} />
                       <RechartsTooltip cursor={{ fill: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)" }} contentStyle={{ borderRadius: 12, border: `1px solid ${cardBorder}`, background: isDark ? "#1f2937" : "#fff" }} />
                       <Legend verticalAlign="top" height={36} iconType="circle" />
-                      <Bar dataKey="Completas" stackId="a" fill={CORES.completas} radius={[0, 0, 0, 0]} maxBarSize={40} />
+                      <Bar dataKey="Plantoes" stackId="a" fill={CORES.plantoes} radius={[0, 0, 0, 0]} maxBarSize={40} />
                       <Bar dataKey="Extras" stackId="a" fill={CORES.extras} radius={[0, 0, 0, 0]} maxBarSize={40} />
                       <Bar dataKey="Férias" stackId="a" fill={CORES.ferias} radius={[0, 0, 0, 0]} maxBarSize={40} />
                       <Bar dataKey="Faltas" stackId="a" fill={CORES.ausentes} radius={[4, 4, 0, 0]} maxBarSize={40} />
@@ -337,7 +379,7 @@ export default function RelatoriosPage() {
                   <TableHead>
                     <TableRow>
                       <TableCell sx={{ fontWeight: 800, background: headBg }}>Locação</TableCell>
-                      <TableCell align="center" sx={{ fontWeight: 800, background: headBg }}>Completas</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: 800, background: headBg }}>Plantoes 12H</TableCell>
                       <TableCell align="center" sx={{ fontWeight: 800, background: headBg }}>Extras</TableCell>
                       <TableCell align="center" sx={{ fontWeight: 800, background: headBg }}>Férias/Folgas</TableCell>
                       <TableCell align="center" sx={{ fontWeight: 800, background: headBg }}>Faltas</TableCell>
@@ -350,7 +392,7 @@ export default function RelatoriosPage() {
                       locacoesResumo.map((loc, idx) => (
                         <TableRow key={idx} hover>
                           <TableCell sx={{ fontWeight: 700, color: "primary.main" }}>{loc.locacao}</TableCell>
-                          <TableCell align="center"><Typography variant="body2" sx={{ fontWeight: 600 }}>{loc.totalCompletas}h</Typography></TableCell>
+                          <TableCell align="center"><Typography variant="body2" sx={{ fontWeight: 600 }}>{loc.totalPlantoes}h</Typography></TableCell>
                           <TableCell align="center">
                             <Typography variant="body2" sx={{ fontWeight: 600, color: loc.totalExtras > 0 ? "success.main" : "text.disabled" }}>
                               {loc.totalExtras > 0 ? `+${loc.totalExtras}h` : "0h"}
@@ -383,7 +425,7 @@ export default function RelatoriosPage() {
                       <TableCell sx={{ fontWeight: 800, background: headBg }}>Funcionário</TableCell>
                       <TableCell sx={{ fontWeight: 800, background: headBg }}>Horas Dia</TableCell>
                       <TableCell sx={{ fontWeight: 800, background: headBg }}>Locação</TableCell>
-                      <TableCell align="center" sx={{ fontWeight: 800, background: headBg }}>Horas</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: 800, background: headBg }}>Plantões 12h</TableCell>
                       <TableCell align="center" sx={{ fontWeight: 800, background: headBg }}>Extras</TableCell>
                       <TableCell align="center" sx={{ fontWeight: 800, background: headBg }}>Férias</TableCell>
                       <TableCell align="center" sx={{ fontWeight: 800, background: headBg }}>Faltas</TableCell>
@@ -409,7 +451,7 @@ export default function RelatoriosPage() {
                           <TableCell><Chip label={func.horasDia} size="small" variant="outlined" color="primary" /></TableCell>
 
                           <TableCell><Chip label={func.locacao} size="small" variant="outlined" color="primary" /></TableCell>
-                          <TableCell align="center"><Typography variant="body2" sx={{ fontWeight: 600 }}>{func.horasCompletas}h</Typography></TableCell>
+                          <TableCell align="center"><Typography variant="body2" sx={{ fontWeight: 600 }}>{func.horasPlantoes}h</Typography></TableCell>
                           <TableCell align="center">
                             <Typography variant="body2" sx={{ fontWeight: 600, color: func.horasExtras > 0 ? "success.main" : "text.disabled" }}>
                               {func.horasExtras}h

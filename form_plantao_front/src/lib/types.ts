@@ -17,7 +17,7 @@ export interface Marcacao {
 
 export interface Horas {
   id?: number;
-  horasCompletas: number;
+  horasPlantoes: number;
   horasExtras: number;
   horasFerias: number;
   horasAusentes: number;
@@ -54,7 +54,7 @@ export interface MarcacaoDTO {
 
 export interface RelatorioLocacaoDTO {
   locacao: string;
-  totalCompletas: number;
+  totalPlantoes: number;
   totalExtras: number;
   totalFerias: number;
   totalAusentes: number;

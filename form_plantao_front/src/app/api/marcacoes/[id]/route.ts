@@ -1,8 +1,9 @@
 import { proxyFetch } from "@/lib/proxyfetch";
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
     const body = await req.text();
-    return await proxyFetch(`/marcacoes/${params.id}`, {
+    const resolvedParams = await params;
+    return await proxyFetch(`/marcacoes/${resolvedParams.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body

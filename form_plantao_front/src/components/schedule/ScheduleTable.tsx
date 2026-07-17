@@ -122,7 +122,7 @@ function EmployeeRow({ form, cycleDays, onCellClick, onHoursChange }: { form: Fo
 
       {/* Totais de horas / plantões */}
       <TableCell align="center" sx={{ borderRight: "1px solid rgba(224,224,224,0.3)", fontWeight: 700, color: "#3b82f6" }}>
-        {form.horasTotais?.horasCompletas ?? 0}
+        {form.horasTotais?.horasPlantoes ?? 0}
       </TableCell>
       <TableCell align="center" sx={{ borderRight: "1px solid rgba(224,224,224,0.3)", fontWeight: 700, color: "#8b5cf6" }}>
         {form.horasTotais?.horasExtras ?? 0}

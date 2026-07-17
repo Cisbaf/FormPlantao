@@ -2,6 +2,7 @@
 
 import { useColorMode } from "@/app/providers";
 import {
+  Assignment,
   Brightness4,
   Brightness7,
   NoteAdd,
@@ -117,16 +118,8 @@ export default function DashboardLayout({ children, onRefresh }: DashboardLayout
             </Box>
 
             <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.5, sm: 1.5 } }}>
-              <Button
-                variant="outlined"
-                color="warning"
-                size="small"
-                startIcon={<Person />}
-                onClick={() => router.push("/funcionarios")}
-                sx={{ display: { xs: "none", sm: "flex" }, borderRadius: "20px" }}
-              >
-                Funcionários
-              </Button>
+
+
 
               <Button
                 variant="outlined"
@@ -140,7 +133,7 @@ export default function DashboardLayout({ children, onRefresh }: DashboardLayout
               </Button>
 
               <Button
-                variant="contained"
+                variant="outlined"
                 color="primary"
                 size="small"
                 startIcon={<NoteAdd />}
@@ -148,6 +141,28 @@ export default function DashboardLayout({ children, onRefresh }: DashboardLayout
                 sx={{ display: { xs: "none", sm: "flex" }, borderRadius: "20px" }}
               >
                 Novo Formulário
+              </Button>
+
+              <Button
+                variant="contained"
+                color="warning"
+                size="small"
+                startIcon={<Person />}
+                onClick={() => router.push("/funcionarios")}
+                sx={{ display: { xs: "none", sm: "flex" }, borderRadius: "20px" }}
+              >
+                Funcionários
+              </Button>
+
+              <Button
+                variant="contained"
+                color="info"
+                size="small"
+                startIcon={<Assignment />}
+                onClick={() => router.push("/relatorios")}
+                sx={{ display: { xs: "none", sm: "flex" }, borderRadius: "20px" }}
+              >
+                Relatorio
               </Button>
 
               {/* Mobile quick icons */}
