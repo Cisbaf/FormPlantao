@@ -3,7 +3,7 @@
 import React, { useState, useEffect, use } from "react";
 import { Box, CircularProgress, Paper, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
-import { fetchFormularios, updateFormulario } from "@/lib/api"; // <-- Importe updateFormulario aqui
+import { fetchFormularios, updateFormulario } from "@/lib/api";
 import { FormularioUnico, EditingCell } from "@/lib/types";
 import { parseYearMonth, getDaysInCycle, formatDateToISO } from "@/lib/utils";
 import { parseLocalDate } from "@/lib/api";
@@ -18,14 +18,14 @@ export default function MesDetailPage({ params }: { params: Promise<{ yearMonth:
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [editingCell, setEditingCell] = useState<EditingCell | null>(null);
 
   const monthInfo = parseYearMonth(yearMonth);
   const cycleDays = getDaysInCycle(yearMonth);
 
-  const loadData = async () => {
-    setLoading(true);
+  // Modificamos a função para aceitar um parâmetro "showSpinner"
+  const loadData = async (showSpinner = true) => {
+    if (showSpinner) setLoading(true);
     setError(null);
     try {
       const data = await fetchFormularios();
@@ -38,13 +38,14 @@ export default function MesDetailPage({ params }: { params: Promise<{ yearMonth:
       console.error(err);
       setError("Erro ao carregar dados dos plantões do mês de referência.");
     } finally {
-      setLoading(false);
+      if (showSpinner) setLoading(false);
     }
   };
 
+  // Carrega com spinner apenas quando o mês da URL muda (montagem inicial)
   useEffect(() => {
-    loadData();
-  }, [refreshTrigger, yearMonth]);
+    loadData(true);
+  }, [yearMonth]);
 
   // Abrir modal ao clicar numa célula
   const handleCellClick = (form: FormularioUnico, date: Date) => {
@@ -62,8 +63,8 @@ export default function MesDetailPage({ params }: { params: Promise<{ yearMonth:
   const handleHoursChange = async (form: FormularioUnico, newHoras: number) => {
     try {
       await updateFormulario(form.id!, { horas: newHoras });
-
-      setRefreshTrigger((prev) => prev + 1);
+      // Atualiza os dados em segundo plano (false) sem piscar a tela
+      await loadData(false);
     } catch (err) {
       console.error("Erro ao atualizar horas:", err);
     }
@@ -76,7 +77,8 @@ export default function MesDetailPage({ params }: { params: Promise<{ yearMonth:
   });
 
   return (
-    <DashboardLayout onRefresh={() => setRefreshTrigger((prev) => prev + 1)}>
+    // Se o usuário clicar no botão de recarregar do layout, mostramos o spinner (true)
+    <DashboardLayout onRefresh={() => loadData(true)}>
       <ScheduleHeader
         monthLabel={monthInfo.label}
         yearMonth={yearMonth}
@@ -113,7 +115,7 @@ export default function MesDetailPage({ params }: { params: Promise<{ yearMonth:
           forms={filteredForms}
           cycleDays={cycleDays}
           onCellClick={handleCellClick}
-          onHoursChange={handleHoursChange} // <-- PASSA A FUNÇÃO AQUI
+          onHoursChange={handleHoursChange}
         />
       )}
 
@@ -122,8 +124,8 @@ export default function MesDetailPage({ params }: { params: Promise<{ yearMonth:
         editingCell={editingCell}
         onClose={() => setEditingCell(null)}
         onSaved={async () => {
-          await loadData();
-          setEditingCell(null);
+          setEditingCell(null); // Fecha o modal imediatamente para resposta rápida na UI
+          await loadData(false); // Atualiza a tabela silenciosamente por trás das cortinas
         }}
       />
     </DashboardLayout>

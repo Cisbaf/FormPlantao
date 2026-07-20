@@ -278,7 +278,7 @@ export default function RelatoriosPage() {
           {/* NOVA SEÇÃO: KPIs GERAIS (Total do Mês) */}
           <Grid container spacing={2} sx={{ mb: 4 }}>
             {[
-              { label: "Total Plantões 12h", value: totaisGerais.plantoes, color: CORES.plantoes, icon: <AccessTime /> },
+              { label: "Total Horas Contratadas", value: totaisGerais.plantoes, color: CORES.plantoes, icon: <AccessTime /> },
               { label: "Total Extras", value: totaisGerais.extras, color: CORES.extras, icon: <AddCircleOutlineOutlined /> },
               { label: "Total Férias/Folga", value: totaisGerais.ferias, color: CORES.ferias, icon: <BeachAccess /> },
               { label: "Total Faltas", value: totaisGerais.ausentes, color: CORES.ausentes, icon: <ErrorOutlineOutlined /> },
