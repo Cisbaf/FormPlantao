@@ -32,7 +32,7 @@ export default function Home() {
     } catch (err: any) {
       console.error(err);
       setError(
-        "Não foi possível conectar ao servidor backend (localhost:8080). Certifique-se de que a aplicação Spring Boot está em execução e de que o banco de dados está online."
+        "Não foi possível conectar ao servidor backend. Certifique-se de que a aplicação Spring Boot está em execução e de que o banco de dados está online."
       );
     } finally {
       setLoading(false);
@@ -149,7 +149,7 @@ export default function Home() {
           </Typography>
         </Paper>
       ) : (
-        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", md: "1fr 1fr 1fr" }, gap: 3 }}>
+        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", md: "1fr 1fr 1fr 1fr 1fr" }, gap: 3 }}>
           {groupedMonths.filter(group => !mesesEscondidos.includes(group.label)).map((group) => (
             <MonthCard
               key={group.yearMonth}

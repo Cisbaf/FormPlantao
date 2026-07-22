@@ -31,7 +31,7 @@ export function RelatoriosHeader({
         </Typography>
       </Box>
 
-      <FormControl size="small" sx={{ minWidth: 200 }}>
+      <FormControl size="small" sx={{ minWidth: 200, width: { xs: "100%", sm: "auto" } }}>
         <InputLabel id="mes-select-label">Mês de Referência</InputLabel>
         <Select
           labelId="mes-select-label"

@@ -15,7 +15,9 @@ import {
   Box,
   Chip,
   Divider,
+  useMediaQuery,
 } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import { EditingCell } from "@/lib/types";
 import { updateMarcacao, createMarcacao } from "@/lib/api";
 import { MARCA_MAX_LENGTH, MARK_COLORS } from "@/lib/constants";
@@ -33,6 +35,8 @@ interface MarkingDialogProps {
  * - 24h: até 2 letras (ex: "TF" = Trabalho + Folga)
  */
 export default function MarkingDialog({ editingCell, onClose, onSaved }: MarkingDialogProps) {
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const [selectedMarca1, setSelectedMarca1] = useState("");
   const [selectedMarca2, setSelectedMarca2] = useState("");
   const [customMarca, setCustomMarca] = useState("");
@@ -147,7 +151,7 @@ export default function MarkingDialog({ editingCell, onClose, onSaved }: Marking
   const markOptions = Object.entries(MARK_COLORS);
 
   return (
-    <Dialog open={!!editingCell} onClose={onClose} fullWidth maxWidth="lg">
+    <Dialog open={!!editingCell} onClose={onClose} fullWidth maxWidth="lg" fullScreen={fullScreen}>
       {editingCell && (
         <form onSubmit={handleSave}>
           <DialogTitle sx={{ fontWeight: 700 }}>Marcação de Plantão</DialogTitle>
@@ -274,7 +278,8 @@ export default function MarkingDialog({ editingCell, onClose, onSaved }: Marking
                   setUseSecondShift(!useSecondShift);
 
                 }}
-                sx={{ borderRadius: "8px" }}
+                fullWidth
+                sx={{ borderRadius: "8px", "@media (min-width:600px)": { width: "auto" } }}
               >
                 {useSecondShift ? "✓ 2º Plantão Ativado (24h)" : "+ Adicionar 2º Plantão (24h)"}
               </Button>

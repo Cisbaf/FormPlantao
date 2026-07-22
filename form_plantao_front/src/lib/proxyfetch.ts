@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 const BackEndURL = process.env.BACKEND_URL;
+console.log(BackEndURL);
 
 export async function proxyFetch(path: string, init?: RequestInit) {
     if (!BackEndURL) {

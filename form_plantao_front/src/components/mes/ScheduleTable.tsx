@@ -32,8 +32,8 @@ function MarkingBadge({ marca }: { marca: string }) {
     return (
       <Box
         sx={{
-          width: 28,
-          height: 28,
+          width: { xs: 32, sm: 28 },
+          height: { xs: 32, sm: 28 },
           borderRadius: "6px",
           display: "flex",
           alignItems: "center",
@@ -58,8 +58,8 @@ function MarkingBadge({ marca }: { marca: string }) {
     <Box sx={{ display: "flex", gap: "2px", justifyContent: "center", mx: "auto" }}>
       <Box
         sx={{
-          width: 18,
-          height: 28,
+          width: { xs: 20, sm: 18 },
+          height: { xs: 32, sm: 28 },
           borderRadius: "4px 0 0 4px",
           display: "flex",
           alignItems: "center",
@@ -75,8 +75,8 @@ function MarkingBadge({ marca }: { marca: string }) {
       </Box>
       <Box
         sx={{
-          width: 18,
-          height: 28,
+          width: { xs: 20, sm: 18 },
+          height: { xs: 32, sm: 28 },
           borderRadius: "0 4px 4px 0",
           display: "flex",
           alignItems: "center",
@@ -200,6 +200,8 @@ function EmployeeRow({ form, cycleDays, onCellClick, onHoursChange }: { form: Fo
             onClick={() => onCellClick(form, day)}
             sx={{
               p: 0.5,
+              minWidth: { xs: "44px", sm: "48px" },
+              minHeight: { xs: 44, sm: "auto" },
               cursor: "pointer",
               transition: "all 0.1s ease",
               borderRight: "1px solid",
@@ -314,7 +316,7 @@ function DailySummaryRows({ cycleDays, contagemDiaria }: { cycleDays: Date[]; co
       ))}
 
       {/* Linha extra: soma X + E por dia */}
-      <TableRow hover sx={{ "&:hover td": { bgcolor: (theme) => theme.palette.mode === "dark" ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.01)" } }}>
+      {/* <TableRow hover sx={{ "&:hover td": { bgcolor: (theme) => theme.palette.mode === "dark" ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.01)" } }}>
         <TableCell
           sx={{
             position: "sticky",
@@ -378,7 +380,7 @@ function DailySummaryRows({ cycleDays, contagemDiaria }: { cycleDays: Date[]; co
             </TableCell>
           );
         })}
-      </TableRow>
+      </TableRow> */}
     </>
   );
 }
@@ -406,41 +408,64 @@ export default function ScheduleTable({ forms, cycleDays, onCellClick, onHoursCh
           A soma de Férias + Ausências ({totalFA * 12} horas) é maior que a soma de Plantão + Plantão Extra ({totalXE * 12} horas) no período.
         </Alert>
       )}
-      <Paper elevation={0} sx={{ borderRadius: "16px", border: "1px solid", borderColor: (theme) => theme.palette.mode === "dark" ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)", overflow: "hidden" }}>
+      <Paper
+        elevation={0}
+        sx={{
+          borderRadius: "16px",
+          border: "1px solid",
+          borderColor: (theme) => theme.palette.mode === "dark" ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)",
+          overflow: "hidden",
+          position: "relative",
+          "&::after": {
+            content: '""',
+            display: { xs: "block", md: "none" },
+            position: "absolute",
+            top: 0,
+            right: 0,
+            bottom: 0,
+            width: "16px",
+            pointerEvents: "none",
+            background: (theme) =>
+              theme.palette.mode === "dark"
+                ? "linear-gradient(to left, rgba(0,0,0,0.35), transparent)"
+                : "linear-gradient(to left, rgba(0,0,0,0.12), transparent)",
+          },
+        }}
+      >
         <TableContainer sx={{ maxHeight: "68vh" }}>
           <Table stickyHeader size="small" aria-label="schedule grid">
             <TableHead>
               <TableRow>
-                <TableCell sx={{ fontWeight: 800, zIndex: 10, left: 0, position: "sticky", background: (theme) => theme.palette.mode === "dark" ? "#111827" : "#f1f5f9", minWidth: "200px", borderRight: "1px solid rgba(224,224,224,0.3)" }}>
+                <TableCell sx={{ fontWeight: 800, zIndex: 10, left: 0, position: "sticky", background: (theme) => theme.palette.mode === "dark" ? "#111827" : "#f1f5f9", minWidth: { xs: "150px", sm: "200px" }, borderRight: "1px solid rgba(224,224,224,0.3)" }}>
                   Funcionário
                 </TableCell>
                 <TableCell align="center" sx={{ fontWeight: 800, zIndex: 5, background: (theme) => theme.palette.mode === "dark" ? "#111827" : "#f1f5f9", minWidth: "70px", borderRight: "1px solid rgba(224,224,224,0.3)" }}>
                   Contrato
                 </TableCell>
                 <TableCell align="center" sx={{ fontWeight: 800, zIndex: 5, background: (theme) => theme.palette.mode === "dark" ? "#111827" : "#f1f5f9", minWidth: "40px", borderRight: "1px solid rgba(224,224,224,0.3)" }}>
-                  <Tooltip title="Plantão 12h (X)">
+                  <Tooltip title="Plantão 12h (X)" enterTouchDelay={0} leaveTouchDelay={2500}>
                     <Typography variant="body2" sx={{ fontWeight: 800, color: "#3b82f6", cursor: "help" }}>X</Typography>
                   </Tooltip>
                 </TableCell>
                 <TableCell align="center" sx={{ fontWeight: 800, zIndex: 5, background: (theme) => theme.palette.mode === "dark" ? "#111827" : "#f1f5f9", minWidth: "40px", borderRight: "1px solid rgba(224,224,224,0.3)" }}>
-                  <Tooltip title="Plantão Extra (E)">
+                  <Tooltip title="Plantão Extra (E)" enterTouchDelay={0} leaveTouchDelay={2500}>
                     <Typography variant="body2" sx={{ fontWeight: 800, color: "#8b5cf6", cursor: "help" }}>E</Typography>
                   </Tooltip>
                 </TableCell>
                 <TableCell align="center" sx={{ fontWeight: 800, zIndex: 5, background: (theme) => theme.palette.mode === "dark" ? "#111827" : "#f1f5f9", minWidth: "40px", borderRight: "1px solid rgba(224,224,224,0.3)" }}>
-                  <Tooltip title="Férias (F)">
+                  <Tooltip title="Férias (F)" enterTouchDelay={0} leaveTouchDelay={2500}>
                     <Typography variant="body2" sx={{ fontWeight: 800, color: "#10b981", cursor: "help" }}>F</Typography>
                   </Tooltip>
                 </TableCell>
                 <TableCell align="center" sx={{ fontWeight: 800, zIndex: 5, background: (theme) => theme.palette.mode === "dark" ? "#111827" : "#f1f5f9", minWidth: "40px", borderRight: "1px solid rgba(224,224,224,0.3)" }}>
-                  <Tooltip title="Ausência (A)">
+                  <Tooltip title="Ausência (A)" enterTouchDelay={0} leaveTouchDelay={2500}>
                     <Typography variant="body2" sx={{ fontWeight: 800, color: "#ef4444", cursor: "help" }}>A</Typography>
                   </Tooltip>
                 </TableCell>
                 {cycleDays.map((day, idx) => {
                   const { dayNum, monthName, weekDayName, isWeekend } = getDayHeader(day);
                   return (
-                    <TableCell key={idx} align="center" sx={{ p: 1, zIndex: 5, minWidth: "48px", fontWeight: 700, bgcolor: (theme) => isWeekend ? (theme.palette.mode === "dark" ? "#1e293b" : "#f8fafc") : (theme.palette.mode === "dark" ? "#111827" : "#f1f5f9"), borderRight: "1px solid", borderColor: (theme) => theme.palette.mode === "dark" ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)" }}>
+                    <TableCell key={idx} align="center" sx={{ p: 1, zIndex: 5, minWidth: { xs: "44px", sm: "48px" }, fontWeight: 700, bgcolor: (theme) => isWeekend ? (theme.palette.mode === "dark" ? "#1e293b" : "#f8fafc") : (theme.palette.mode === "dark" ? "#111827" : "#f1f5f9"), borderRight: "1px solid", borderColor: (theme) => theme.palette.mode === "dark" ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)" }}>
                       <Box sx={{ fontSize: "12px", color: "text.primary" }}>{dayNum}</Box>
                       <Box sx={{ fontSize: "9px", color: "text.secondary", textTransform: "uppercase" }}>{weekDayName}</Box>
                       <Box sx={{ fontSize: "9px", color: "primary.main", fontWeight: "normal" }}>{monthName}</Box>

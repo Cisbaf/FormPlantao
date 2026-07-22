@@ -6,7 +6,7 @@ import {
   Domain,
   ErrorOutlineOutlined,
 } from "@mui/icons-material";
-import { Box, Grid, Paper, Typography, useTheme } from "@mui/material";
+import { Box, Grid, Paper, Typography, useTheme, useMediaQuery } from "@mui/material";
 import {
   Bar,
   BarChart,
@@ -50,6 +50,7 @@ interface RelatoriosGraficosProps {
 
 export function RelatoriosGraficos({ locacoesResumo, totaisGerais }: RelatoriosGraficosProps) {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isDark = theme.palette.mode === "dark";
   const cardBorder = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
   const cardBg = isDark ? "rgba(17, 24, 39, 0.4)" : "#fff";
@@ -146,7 +147,7 @@ export function RelatoriosGraficos({ locacoesResumo, totaisGerais }: RelatoriosG
             <Paper
               elevation={0}
               sx={{
-                p: 3,
+                p: { xs: 1.5, sm: 3 },
                 height: "100%",
                 borderRadius: "16px",
                 border: "1px solid",
@@ -160,18 +161,22 @@ export function RelatoriosGraficos({ locacoesResumo, totaisGerais }: RelatoriosG
               >
                 <AssessmentOutlined color="primary" /> Proporção Geral
               </Typography>
-              <ResponsiveContainer width="100%" height={260}>
+              <ResponsiveContainer width="100%" height={isMobile ? 300 : 260}>
                 <PieChart>
                   <Pie
                     data={pieData}
                     dataKey="value"
                     nameKey="name"
                     cx="50%"
-                    cy="50%"
+                    cy={isMobile ? "40%" : "50%"}
                     innerRadius={60}
                     outerRadius={85}
                     paddingAngle={3}
-                    label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
+                    label={
+                      isMobile
+                        ? false
+                        : ({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`
+                    }
                   >
                     {pieData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
@@ -184,6 +189,14 @@ export function RelatoriosGraficos({ locacoesResumo, totaisGerais }: RelatoriosG
                       background: isDark ? "#1f2937" : "#fff",
                     }}
                   />
+                  {isMobile && (
+                    <Legend
+                      verticalAlign="bottom"
+                      height={60}
+                      iconType="circle"
+                      wrapperStyle={{ fontSize: 11 }}
+                    />
+                  )}
                 </PieChart>
               </ResponsiveContainer>
             </Paper>
@@ -193,7 +206,7 @@ export function RelatoriosGraficos({ locacoesResumo, totaisGerais }: RelatoriosG
             <Paper
               elevation={0}
               sx={{
-                p: 3,
+                p: { xs: 1.5, sm: 3 },
                 height: "100%",
                 borderRadius: "16px",
                 border: "1px solid",
@@ -212,11 +225,11 @@ export function RelatoriosGraficos({ locacoesResumo, totaisGerais }: RelatoriosG
                   <CartesianGrid strokeDasharray="3 3" stroke={cardBorder} vertical={false} />
                   <XAxis
                     dataKey="locacao"
-                    tick={{ fontSize: 11, fill: theme.palette.text.secondary }}
+                    tick={{ fontSize: isMobile ? 9 : 11, fill: theme.palette.text.secondary }}
                     interval={0}
-                    angle={-15}
+                    angle={isMobile ? -60 : -15}
                     textAnchor="end"
-                    height={50}
+                    height={isMobile ? 70 : 50}
                   />
                   <YAxis tick={{ fontSize: 12, fill: theme.palette.text.secondary }} />
                   <RechartsTooltip

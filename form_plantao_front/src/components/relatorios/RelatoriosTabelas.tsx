@@ -74,18 +74,26 @@ export function RelatoriosTabelas({ locacoesResumo, funcionariosDetalhado }: Rel
       }}
     >
       <Box sx={{ borderBottom: 1, borderColor: "divider", px: 2, pt: 1, background: headBg }}>
-        <Tabs value={tabValue} onChange={handleTabChange} textColor="primary" indicatorColor="primary">
+        <Tabs
+          value={tabValue}
+          onChange={handleTabChange}
+          textColor="primary"
+          indicatorColor="primary"
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
+        >
           <Tab
             icon={<Domain fontSize="small" />}
             iconPosition="start"
             label="Resumo por Locação"
-            sx={{ fontWeight: 700, textTransform: "none" }}
+            sx={{ fontWeight: 700, textTransform: "none", whiteSpace: "nowrap" }}
           />
           <Tab
             icon={<Person fontSize="small" />}
             iconPosition="start"
             label="Detalhamento por Funcionário"
-            sx={{ fontWeight: 700, textTransform: "none" }}
+            sx={{ fontWeight: 700, textTransform: "none", whiteSpace: "nowrap" }}
           />
         </Tabs>
       </Box>
@@ -158,8 +166,8 @@ export function RelatoriosTabelas({ locacoesResumo, funcionariosDetalhado }: Rel
             <TableHead>
               <TableRow>
                 <TableCell sx={{ fontWeight: 800, background: headBg }}>Funcionário</TableCell>
-                <TableCell sx={{ fontWeight: 800, background: headBg }}>Horas Dia</TableCell>
-                <TableCell sx={{ fontWeight: 800, background: headBg }}>Locação</TableCell>
+                <TableCell sx={{ fontWeight: 800, background: headBg, display: { xs: "none", sm: "table-cell" } }}>Horas Dia</TableCell>
+                <TableCell sx={{ fontWeight: 800, background: headBg, display: { xs: "none", md: "table-cell" } }}>Locação</TableCell>
                 <TableCell align="center" sx={{ fontWeight: 800, background: headBg }}>Plantões 12h</TableCell>
                 <TableCell align="center" sx={{ fontWeight: 800, background: headBg }}>Extras</TableCell>
                 <TableCell align="center" sx={{ fontWeight: 800, background: headBg }}>Férias</TableCell>
@@ -191,10 +199,10 @@ export function RelatoriosTabelas({ locacoesResumo, funcionariosDetalhado }: Rel
                         </Box>
                       </Box>
                     </TableCell>
-                    <TableCell>
+                    <TableCell sx={{ display: { xs: "none", sm: "table-cell" } }}>
                       <Chip label={func.horasDia} size="small" variant="outlined" color="primary" />
                     </TableCell>
-                    <TableCell>
+                    <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
                       <Chip label={func.locacao} size="small" variant="outlined" color="primary" />
                     </TableCell>
                     <TableCell align="center">

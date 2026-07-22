@@ -86,7 +86,7 @@ export default function FuncionariosPage() {
             <Box sx={{ display: "flex", alignItems: "center", width: { xs: "100%", md: "auto" }, pb: "10px", }}>
                 <Search fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
 
-                <TextField placeholder="Buscar funcionário ou locação..." variant="standard" onChange={(e) => setSearchTerm(e.target.value)} ></TextField>
+                <TextField fullWidth placeholder="Buscar funcionário ou locação..." variant="standard" onChange={(e) => setSearchTerm(e.target.value)} ></TextField>
 
             </Box>
 
@@ -96,7 +96,7 @@ export default function FuncionariosPage() {
                         <TableHead>
                             <TableRow>
                                 <TableCell sx={{ fontWeight: 'bold' }}>Nome</TableCell>
-                                <TableCell sx={{ fontWeight: 'bold' }}>Matrícula</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold', display: { xs: 'none', sm: 'table-cell' } }}>Matrícula</TableCell>
                                 <TableCell sx={{ fontWeight: 'bold' }}>Locação</TableCell>
                                 <TableCell align="right" sx={{ fontWeight: 'bold' }}>Ações</TableCell>
                             </TableRow>
@@ -123,7 +123,7 @@ export default function FuncionariosPage() {
                                                 <Typography variant="body2" sx={{ fontWeight: 500 }}>{funci.nome}</Typography>
                                             </Box>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                                 <Badge color="action" fontSize="small" />
                                                 <Typography variant="body2">{funci.matricula}</Typography>
@@ -136,16 +136,18 @@ export default function FuncionariosPage() {
                                             </Box>
                                         </TableCell>
                                         <TableCell align="right">
-                                            <Tooltip title="Editar">
-                                                <IconButton color="primary" onClick={() => handleOpenEdit(funci)}>
-                                                    <Edit />
-                                                </IconButton>
-                                            </Tooltip>
-                                            <Tooltip title="Excluir">
-                                                <IconButton color="error" onClick={() => handleDelete(funci.id!, funci.nome)}>
-                                                    <Delete />
-                                                </IconButton>
-                                            </Tooltip>
+                                            <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
+                                                <Tooltip title="Editar">
+                                                    <IconButton color="primary" onClick={() => handleOpenEdit(funci)}>
+                                                        <Edit />
+                                                    </IconButton>
+                                                </Tooltip>
+                                                <Tooltip title="Excluir">
+                                                    <IconButton color="error" onClick={() => handleDelete(funci.id!, funci.nome)}>
+                                                        <Delete />
+                                                    </IconButton>
+                                                </Tooltip>
+                                            </Box>
                                         </TableCell>
                                     </TableRow>
                                 ))
