@@ -13,7 +13,6 @@ import {
     Select,
     TextField,
 } from "@mui/material";
-// Importe tanto a função de criar quanto a de atualizar
 import { createFuncionario, updateFuncionario, Funcionario } from "@/lib/api";
 
 interface FuncionarioDialogProps {
@@ -21,7 +20,6 @@ interface FuncionarioDialogProps {
     onClose: () => void;
     onSuccess: (msg: string) => void;
     onError: (msg: string) => void;
-    // Tornamos opcional (?). Se existir, é Edição. Se não existir, é Criação.
     funcionarioSelecionado?: Funcionario | null;
 }
 
@@ -36,16 +34,13 @@ export default function FuncionarioDialog({
     const [matricula, setMatricula] = useState("");
     const [locacao, setLocacao] = useState("");
 
-    // O useEffect identifica se é criação ou edição toda vez que o modal abre
     useEffect(() => {
         if (open) {
             if (funcionarioSelecionado) {
-                // MODO EDIÇÃO: Preenche os dados
                 setNome(funcionarioSelecionado.nome);
                 setMatricula(funcionarioSelecionado.matricula.toString());
                 setLocacao(funcionarioSelecionado.locacao);
             } else {
-                // MODO CRIAÇÃO: Limpa os campos
                 setNome("");
                 setMatricula("");
                 setLocacao("");
@@ -63,7 +58,6 @@ export default function FuncionarioDialog({
 
         try {
             if (funcionarioSelecionado && funcionarioSelecionado.id) {
-                // === LÓGICA DE ATUALIZAÇÃO ===
                 await updateFuncionario(funcionarioSelecionado.id, {
                     nome,
                     matricula: parseInt(matricula, 10),
@@ -71,7 +65,6 @@ export default function FuncionarioDialog({
                 });
                 onSuccess("Funcionário atualizado com sucesso!");
             } else {
-                // === LÓGICA DE CRIAÇÃO ===
                 await createFuncionario({
                     nome,
                     matricula: parseInt(matricula, 10),
@@ -85,7 +78,6 @@ export default function FuncionarioDialog({
         }
     };
 
-    // Textos dinâmicos baseados no modo (Edição vs Criação)
     const isEditMode = !!funcionarioSelecionado;
 
     return (

@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { deleteByDataReferencia, fetchFormularios } from "@/lib/api";
 import { FormularioUnico } from "@/lib/types";
 import { groupFormulariosByMonth } from "@/lib/utils";
-import DashboardLayout from "@/components/DashboardLayout";
+import DashboardLayout from "@/components/home/DashboardLayout";
 import MonthCard from "@/components/home/MonthCard";
 
 export default function Home() {

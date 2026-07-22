@@ -17,7 +17,7 @@ public record ContagemDiariaResponseDTO(
         boolean alertaAusencias
 ) {
     public static ContagemDiariaResponseDTO of(Map<LocalDate, Map<Character, Integer>> porDia) {
-        long totalX = 0, totalE = 0, totalF = 0, totalA = 0;
+        long totalX = 0L, totalE = 0L, totalF = 0L, totalA = 0L;
 
         for (Map<Character, Integer> contagem : porDia.values()) {
             totalX += contagem.getOrDefault('X', 0);

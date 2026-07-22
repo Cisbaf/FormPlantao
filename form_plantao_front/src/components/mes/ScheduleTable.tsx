@@ -148,7 +148,7 @@ function EmployeeRow({ form, cycleDays, onCellClick, onHoursChange }: { form: Fo
 const SUMMARY_ROWS = [
   { key: "X", label: "Total Plantão Ordinário", color: "#3b82f6" },
   { key: "E", label: "Total Plantão Extra", color: "#8b5cf6" },
-  { key: "F", label: "Total Férias / Folga", color: "#10b981" },
+  { key: "F", label: "Total Férias", color: "#10b981" },
   { key: "A", label: "Total Ausências", color: "#ef4444" },
 ];
 

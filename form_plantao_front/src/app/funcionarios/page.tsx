@@ -1,7 +1,7 @@
 // src/app/funcionarios/page.tsx
 "use client";
 
-import DashboardLayout from "@/components/DashboardLayout";
+import DashboardLayout from "@/components/home/DashboardLayout";
 import { useState, useEffect } from "react";
 import {
     Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Snackbar, Alert,
@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import { Edit, Delete, Badge, LocationOn, Person, Search } from "@mui/icons-material";
 import { fetchFuncionarios, deleteFuncionario, Funcionario } from "@/lib/api";
-import FuncionarioDialog from "@/components/modais/FuncionarioDialog";
+import { FuncionarioDialog } from "@/components/funcionarios";
 
 
 export default function FuncionariosPage() {

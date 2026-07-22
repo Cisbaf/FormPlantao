@@ -1,7 +1,7 @@
 "use client";
 
-import DashboardLayout from "@/components/DashboardLayout";
-import { MarkingDialog, ScheduleHeader, ScheduleLegend, ScheduleTable } from "@/components/schedule";
+import DashboardLayout from "@/components/home/DashboardLayout";
+import { MarkingDialog, ScheduleHeader, ScheduleLegend, ScheduleTable } from "@/components/mes";
 import { fetchContagemDiaria, fetchFormulariosPorDataReferencia, parseLocalDate, updateFormulario } from "@/lib/api";
 import { ContagemDiariaResponse, EditingCell, FormularioUnico } from "@/lib/types";
 import { formatDateToISO, getDaysInCycle, parseYearMonth } from "@/lib/utils";

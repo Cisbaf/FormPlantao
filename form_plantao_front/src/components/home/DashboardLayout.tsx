@@ -25,8 +25,8 @@ import {
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { red, yellow } from "@mui/material/colors";
-import FuncionarioDialog from "./modais/FuncionarioDialog";
-import FormularioDialog from "./modais/FormularioDialog";
+import FuncionarioDialog from "../funcionarios/FuncionarioDialog";
+import FormularioDialog from "../modais/FormularioDialog";
 
 
 interface DashboardLayoutProps {
