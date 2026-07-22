@@ -47,7 +47,6 @@ import {
   YAxis,
 } from "recharts";
 
-// ⚠️ Ajuste este caminho de importação conforme a estrutura do seu projeto
 import { fetchFormularios, fetchRelatorioGeral } from "@/lib/api";
 
 const CORES = {

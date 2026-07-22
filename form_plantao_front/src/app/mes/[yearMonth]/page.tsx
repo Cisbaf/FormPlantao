@@ -1,14 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, use } from "react";
+import DashboardLayout from "@/components/DashboardLayout";
+import { MarkingDialog, ScheduleHeader, ScheduleLegend, ScheduleTable } from "@/components/schedule";
+import { fetchContagemDiaria, fetchFormulariosPorDataReferencia, parseLocalDate, updateFormulario } from "@/lib/api";
+import { ContagemDiariaResponse, EditingCell, FormularioUnico } from "@/lib/types";
+import { formatDateToISO, getDaysInCycle, parseYearMonth } from "@/lib/utils";
 import { Box, CircularProgress, Paper, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
-import { fetchFormularios, updateFormulario } from "@/lib/api";
-import { FormularioUnico, EditingCell } from "@/lib/types";
-import { parseYearMonth, getDaysInCycle, formatDateToISO } from "@/lib/utils";
-import { parseLocalDate } from "@/lib/api";
-import DashboardLayout from "@/components/DashboardLayout";
-import { ScheduleHeader, ScheduleLegend, ScheduleTable, MarkingDialog } from "@/components/schedule";
+import { use, useEffect, useState } from "react";
 
 export default function MesDetailPage({ params }: { params: Promise<{ yearMonth: string }> }) {
   const router = useRouter();
@@ -19,6 +18,7 @@ export default function MesDetailPage({ params }: { params: Promise<{ yearMonth:
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [editingCell, setEditingCell] = useState<EditingCell | null>(null);
+  const [contagemDiaria, setContagemDiaria] = useState<ContagemDiariaResponse | null>(null);
 
   const monthInfo = parseYearMonth(yearMonth);
   const cycleDays = getDaysInCycle(yearMonth);
@@ -28,12 +28,12 @@ export default function MesDetailPage({ params }: { params: Promise<{ yearMonth:
     if (showSpinner) setLoading(true);
     setError(null);
     try {
-      const data = await fetchFormularios();
-      const filtered = data.filter((form) => {
-        const { formatted } = parseYearMonth(form.dataReferencia);
-        return formatted === yearMonth;
-      });
-      setFormularios(filtered);
+      const [data, contagem] = await Promise.all([
+        fetchFormulariosPorDataReferencia(yearMonth),
+        fetchContagemDiaria(yearMonth),
+      ]);
+      setFormularios(data);
+      setContagemDiaria(contagem);
     } catch (err: any) {
       console.error(err);
       setError("Erro ao carregar dados dos plantões do mês de referência.");
@@ -98,7 +98,7 @@ export default function MesDetailPage({ params }: { params: Promise<{ yearMonth:
         <Paper
           elevation={0}
           sx={{
-            p: 6, textAlign: "center", borderRadius: "16px",
+            p: 3, textAlign: "center", borderRadius: "16px",
             border: "1px solid",
             borderColor: (theme) => theme.palette.mode === "dark" ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
           }}
@@ -116,6 +116,7 @@ export default function MesDetailPage({ params }: { params: Promise<{ yearMonth:
           cycleDays={cycleDays}
           onCellClick={handleCellClick}
           onHoursChange={handleHoursChange}
+          contagemDiaria={contagemDiaria}
         />
       )}
 

@@ -1,8 +1,8 @@
-import { FormularioUnico, FormularioDTO, MarcacaoDTO, Funcionario, RelatorioLocacaoDTO } from "./types";
+import { FormularioUnico, FormularioDTO, MarcacaoDTO, Funcionario, RelatorioLocacaoDTO, ContagemDiariaResponse } from "./types";
 import { API_BASE_URL } from "./constants";
 
 // Re-export types and utils for backwards compatibility
-export type { Funcionario, FormularioUnico, Marcacao, FormularioDTO, MarcacaoDTO, RelatorioLocacaoDTO } from "./types";
+export type { Funcionario, FormularioUnico, Marcacao, FormularioDTO, MarcacaoDTO, RelatorioLocacaoDTO, ContagemDiaria, ContagemDiariaResponse } from "./types";
 export { parseYearMonth, parseLocalDate } from "./utils";
 
 // ========================
@@ -17,6 +17,18 @@ export async function fetchFormularios(): Promise<FormularioUnico[]> {
     throw new Error("Erro ao buscar formulários");
   }
   return res.json();
+}
+
+export async function fetchFormulariosPorDataReferencia(data: string): Promise<FormularioUnico[]> {
+  const res = await fetch(`${API_BASE_URL}/formularios/data?dataReferencia=${data}`, {
+    cache: "no-store",
+    headers: { "Content-Type": "application/json" }
+  });
+  if (!res.ok) {
+    throw new Error("Erro ao deletar formulário")
+  }
+  return res.json();
+
 }
 
 export async function createFormulario(dto: FormularioDTO): Promise<FormularioDTO> {
@@ -151,5 +163,20 @@ export async function fetchRelatorioGeral(data: string): Promise<RelatorioLocaca
     throw new Error(`Erro ao buscar relatório geral: ${res.status}`);
   }
 
+  return res.json();
+}
+
+// ========================
+// API Calls - Contagem Diária
+// ========================
+
+export async function fetchContagemDiaria(yearMonth: string): Promise<ContagemDiariaResponse> {
+  const anoMes = yearMonth ? yearMonth.substring(0, 7) : "";
+  const res = await fetch(`${API_BASE_URL}/marcacoes/contagem-diaria?data=${anoMes}`, {
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    throw new Error(`Erro ao buscar contagem diária: ${res.status}`);
+  }
   return res.json();
 }

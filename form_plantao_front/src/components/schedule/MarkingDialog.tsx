@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -33,14 +33,14 @@ interface MarkingDialogProps {
  * - 24h: até 2 letras (ex: "TF" = Trabalho + Folga)
  */
 export default function MarkingDialog({ editingCell, onClose, onSaved }: MarkingDialogProps) {
-  const [selectedMarca1, setSelectedMarca1] = useState("T");
+  const [selectedMarca1, setSelectedMarca1] = useState("");
   const [selectedMarca2, setSelectedMarca2] = useState("");
   const [customMarca, setCustomMarca] = useState("");
   const [useSecondShift, setUseSecondShift] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   // Sincroniza estado quando editingCell muda
-  React.useEffect(() => {
+  useEffect(() => {
     if (!editingCell) return;
 
     const existing = editingCell.existingMarking;
@@ -75,12 +75,20 @@ export default function MarkingDialog({ editingCell, onClose, onSaved }: Marking
         }
       }
     } else {
-      setSelectedMarca1("T");
+      setSelectedMarca1("");
       setSelectedMarca2("");
       setCustomMarca("");
       setUseSecondShift(false);
     }
   }, [editingCell]);
+
+  useEffect(() => {
+    setSelectedMarca1("");
+    setSelectedMarca2("");
+    setCustomMarca("");
+    setUseSecondShift(false);
+  }, [onClose])
+
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -139,7 +147,7 @@ export default function MarkingDialog({ editingCell, onClose, onSaved }: Marking
   const markOptions = Object.entries(MARK_COLORS);
 
   return (
-    <Dialog open={!!editingCell} onClose={onClose} fullWidth maxWidth="xs">
+    <Dialog open={!!editingCell} onClose={onClose} fullWidth maxWidth="lg">
       {editingCell && (
         <form onSubmit={handleSave}>
           <DialogTitle sx={{ fontWeight: 700 }}>Marcação de Plantão</DialogTitle>
@@ -257,29 +265,28 @@ export default function MarkingDialog({ editingCell, onClose, onSaved }: Marking
             <Divider />
 
             {/* Toggle 2º Plantão (24h) */}
+            <Box>
+              <Button
+                variant={useSecondShift ? "contained" : "outlined"}
+                color="secondary"
+                size="small"
+                onClick={() => {
+                  setUseSecondShift(!useSecondShift);
+
+                }}
+                sx={{ borderRadius: "8px" }}
+              >
+                {useSecondShift ? "✓ 2º Plantão Ativado (24h)" : "+ Adicionar 2º Plantão (24h)"}
+              </Button>
+              <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>
+                Ative se o funcionário é 24h e precisa de marcação para dois turnos no mesmo dia.
+              </Typography>
+            </Box>
             {editingCell.form.horas >= 24 && (
-              <Box>
-                <Button
-                  variant={useSecondShift ? "contained" : "outlined"}
-                  color="secondary"
-                  size="small"
-                  onClick={() => {
-                    setUseSecondShift(!useSecondShift);
-                    if (!useSecondShift) setSelectedMarca2("F");
-                    else setSelectedMarca2("");
-                  }}
-                  sx={{ borderRadius: "8px" }}
-                >
-                  {useSecondShift ? "✓ 2º Plantão Ativado (24h)" : "+ Adicionar 2º Plantão (24h)"}
-                </Button>
-                <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>
-                  Ative se o funcionário é 24h e precisa de marcação para dois turnos no mesmo dia.
-                </Typography>
-              </Box>
+              <></>
             )}
 
-
-            {/* 2º Plantão (se ativo) */}
+            {/*  (se ativo) */}
             {useSecondShift && (
               <FormControl component="fieldset">
                 <FormLabel component="legend" sx={{ fontWeight: 600, mb: 1 }}>
@@ -291,10 +298,33 @@ export default function MarkingDialog({ editingCell, onClose, onSaved }: Marking
                   value={selectedMarca2}
                   onChange={(e) => setSelectedMarca2(e.target.value)}
                 >
-                  {markOptions.map(([key, config]) => (
+
+                  {editingCell.form.horas >= 24 &&
+                    markOptions.map(([key, config]) => (
+                      <FormControlLabel
+                        key={key}
+                        value={key}
+                        control={<Radio size="small" />}
+                        label={
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                            <Box
+                              sx={{
+                                width: 16,
+                                height: 16,
+                                borderRadius: "4px",
+                                bgcolor: config.bg,
+                              }}
+                            />
+
+                            {config.label}
+                          </Box>
+                        }
+                      />
+                    ))}
+                  {editingCell.form.horas <= 12 && (
                     <FormControlLabel
-                      key={key}
-                      value={key}
+                      key={"extra"}
+                      value="E"
                       control={<Radio size="small" />}
                       label={
                         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -303,14 +333,16 @@ export default function MarkingDialog({ editingCell, onClose, onSaved }: Marking
                               width: 16,
                               height: 16,
                               borderRadius: "4px",
-                              bgcolor: config.bg,
+                              bgcolor: "#8b5cf6"
                             }}
                           />
-                          {config.label}
-                        </Box>
-                      }
+                          Plantão Extra 12 Horas (E)
+                        </Box>}
                     />
-                  ))}
+
+                  )}
+
+
                   <FormControlLabel
                     key={"desmarcar"}
                     value=""

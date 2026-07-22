@@ -1,19 +1,25 @@
 import { parseLocalDate } from "@/lib/api";
-import { FormularioUnico } from "@/lib/types";
+import { FormularioUnico, ContagemDiaria, ContagemDiariaResponse } from "@/lib/types";
 import { formatDateToISO, getDayHeader, groupFormsBySector } from "@/lib/utils";
 import {
+  Alert,
+  AlertTitle,
   Avatar,
   Box,
-  Chip, Menu, MenuItem,
+  Chip,
+  Menu,
+  MenuItem,
   Paper,
   Table,
   TableBody,
   TableCell,
   TableContainer,
-  TableHead, TableRow,
+  TableHead,
+  TableRow,
   Tooltip,
   Typography
 } from "@mui/material";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import React, { useState } from "react";
 import MarkingBadge from "./MarkingBadge";
 
@@ -22,6 +28,7 @@ interface ScheduleTableProps {
   cycleDays: Date[];
   onCellClick: (form: FormularioUnico, day: Date) => void;
   onHoursChange?: (form: FormularioUnico, newHoras: number) => void;
+  contagemDiaria?: ContagemDiariaResponse | null;
 }
 
 /** Cabeçalho do setor na tabela */
@@ -53,7 +60,6 @@ function SectorHeaderRow({ sector, colSpan }: { sector: string; colSpan: number 
 
 /** Linha de um funcionário */
 function EmployeeRow({ form, cycleDays, onCellClick, onHoursChange }: { form: FormularioUnico; cycleDays: Date[]; onCellClick: (form: FormularioUnico, day: Date) => void; onHoursChange?: (form: FormularioUnico, newHoras: number) => void; }) {
-  // Controle do Menu de seleção de horas
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -98,41 +104,17 @@ function EmployeeRow({ form, cycleDays, onCellClick, onHoursChange }: { form: Fo
           onClick={handleClick}
           sx={{ cursor: "pointer", "&:hover": { bgcolor: "action.hover" } }}
         />
-        <Menu
-          anchorEl={anchorEl}
-          open={open}
-          onClose={handleClose}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'center',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'center',
-          }}
-        >
-          <MenuItem onClick={() => handleSelectHour(12)} selected={form.horas === 12}>
-            12 horas
-          </MenuItem>
-          <MenuItem onClick={() => handleSelectHour(24)} selected={form.horas === 24}>
-            24 horas
-          </MenuItem>
+        <Menu anchorEl={anchorEl} open={open} onClose={handleClose} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} transformOrigin={{ vertical: 'top', horizontal: 'center' }}>
+          <MenuItem onClick={() => handleSelectHour(12)} selected={form.horas === 12}>12 horas</MenuItem>
+          <MenuItem onClick={() => handleSelectHour(24)} selected={form.horas === 24}>24 horas</MenuItem>
         </Menu>
       </TableCell>
 
       {/* Totais de horas / plantões */}
-      <TableCell align="center" sx={{ borderRight: "1px solid rgba(224,224,224,0.3)", fontWeight: 700, color: "#3b82f6" }}>
-        {form.horasTotais?.horasPlantoes ?? 0}
-      </TableCell>
-      <TableCell align="center" sx={{ borderRight: "1px solid rgba(224,224,224,0.3)", fontWeight: 700, color: "#8b5cf6" }}>
-        {form.horasTotais?.horasExtras ?? 0}
-      </TableCell>
-      <TableCell align="center" sx={{ borderRight: "1px solid rgba(224,224,224,0.3)", fontWeight: 700, color: "#10b981" }}>
-        {form.horasTotais?.horasFerias ?? 0}
-      </TableCell>
-      <TableCell align="center" sx={{ borderRight: "1px solid rgba(224,224,224,0.3)", fontWeight: 700, color: "#ef4444" }}>
-        {form.horasTotais?.horasAusentes ?? 0}
-      </TableCell>
+      <TableCell align="center" sx={{ borderRight: "1px solid rgba(224,224,224,0.3)", fontWeight: 700, color: "#3b82f6" }}>{form.horasTotais?.horasPlantoes !== undefined ? form.horasTotais?.horasPlantoes * 12 : 0}</TableCell>
+      <TableCell align="center" sx={{ borderRight: "1px solid rgba(224,224,224,0.3)", fontWeight: 700, color: "#8b5cf6" }}>{form.horasTotais?.horasExtras !== undefined ? form.horasTotais?.horasExtras * 12 : 0}</TableCell>
+      <TableCell align="center" sx={{ borderRight: "1px solid rgba(224,224,224,0.3)", fontWeight: 700, color: "#10b981" }}>{form.horasTotais?.horasFerias !== undefined ? form.horasTotais?.horasFerias * 12 : 0}</TableCell>
+      <TableCell align="center" sx={{ borderRight: "1px solid rgba(224,224,224,0.3)", fontWeight: 700, color: "#ef4444" }}>{form.horasTotais?.horasAusentes !== undefined ? form.horasTotais?.horasAusentes * 12 : 0}</TableCell>
 
       {/* Células de marcação */}
       {cycleDays.map((day, idx) => {
@@ -162,69 +144,258 @@ function EmployeeRow({ form, cycleDays, onCellClick, onHoursChange }: { form: Fo
   );
 }
 
+/** Configuração para gerar as linhas individuais de resumo final */
+const SUMMARY_ROWS = [
+  { key: "X", label: "Total Plantão Ordinário", color: "#3b82f6" },
+  { key: "E", label: "Total Plantão Extra", color: "#8b5cf6" },
+  { key: "F", label: "Total Férias / Folga", color: "#10b981" },
+  { key: "A", label: "Total Ausências", color: "#ef4444" },
+];
+
+/** Componente que renderiza as 4 linhas de totais como se fossem funcionários */
+function DailySummaryRows({ cycleDays, contagemDiaria }: { cycleDays: Date[]; contagemDiaria: ContagemDiaria }) {
+  return (
+    <>
+      <TableRow>
+        <TableCell
+          colSpan={100}
+          sx={{
+            bgcolor: (theme) => theme.palette.mode === "dark" ? "rgba(99,102,241,0.12)" : "rgba(99,102,241,0.06)",
+            borderBottom: "2px solid",
+            borderColor: "primary.main",
+            py: 1.5,
+            position: "sticky",
+            left: 0,
+            zIndex: 3,
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+            <Box sx={{ width: 4, height: 22, bgcolor: "primary.main", borderRadius: "2px" }} />
+            <Typography variant="subtitle2" sx={{ fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px", color: "primary.main" }}>
+              RESUMO GERAL DIÁRIO
+            </Typography>
+          </Box>
+        </TableCell>
+      </TableRow>
+
+      {SUMMARY_ROWS.map(({ key, label, color }) => (
+        <TableRow key={key} hover sx={{ "&:hover td": { bgcolor: (theme) => theme.palette.mode === "dark" ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.01)" } }}>
+          {/* Label usando o visual de funcionário */}
+          <TableCell
+            sx={{
+              position: "sticky",
+              left: 0,
+              zIndex: 2,
+              bgcolor: (theme) => theme.palette.mode === "dark" ? "#111827" : "#fff",
+              borderRight: "1px solid rgba(224,224,224,0.3)",
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              <Avatar sx={{ width: 32, height: 32, fontSize: "15px", fontWeight: "bold", bgcolor: color, color: "#fff" }}>
+                {key}
+              </Avatar>
+              <Box>
+                <Typography variant="body2" sx={{ fontWeight: 700, color }}>{label}</Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
+                  Métricas Diárias
+                </Typography>
+              </Box>
+            </Box>
+          </TableCell>
+
+          {/* Colunas vazias no meio da tabela para alinhar o layout */}
+          {[0, 1, 2, 3, 4].map((i) => (
+            <TableCell
+              key={`empty-${i}`}
+              sx={{
+                borderRight: "1px solid rgba(224,224,224,0.3)",
+                bgcolor: (theme) => theme.palette.mode === "dark" ? "#111827" : "#fff",
+              }}
+            />
+          ))}
+
+          {/* Renderização do valor nos dias correspondentes */}
+          {cycleDays.map((day, idx) => {
+            const dateStr = formatDateToISO(day);
+            const count = contagemDiaria[dateStr]?.[key] || 0;
+
+            return (
+              <TableCell
+                key={idx}
+                align="center"
+                sx={{
+                  borderRight: "1px solid",
+                  borderColor: (theme) => theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
+                  bgcolor: (theme) => theme.palette.mode === "dark" ? "#111827" : "#fff",
+                }}
+              >
+                {count > 0 ? (
+                  <Typography variant="body2" sx={{ fontWeight: 800, color }}>
+                    {count * 12}
+                  </Typography>
+                ) : (
+                  <Typography sx={{ fontSize: "14px", color: "text.disabled" }}>—</Typography>
+                )}
+              </TableCell>
+            );
+          })}
+        </TableRow>
+      ))}
+
+      {/* Linha extra: soma X + E por dia */}
+      <TableRow hover sx={{ "&:hover td": { bgcolor: (theme) => theme.palette.mode === "dark" ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.01)" } }}>
+        <TableCell
+          sx={{
+            position: "sticky",
+            left: 0,
+            zIndex: 2,
+            bgcolor: (theme) => theme.palette.mode === "dark" ? "#111827" : "#fff",
+            borderRight: "1px solid rgba(224,224,224,0.3)",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+            <Avatar sx={{ width: 32, height: 32, fontSize: "13px", fontWeight: "bold", bgcolor: "#f59e0b", color: "#fff" }}>
+              PG
+            </Avatar>
+            <Box>
+              <Typography variant="body2" sx={{ fontWeight: 700, color: "#f59e0b" }}>Total Plantões no Geral</Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
+                Métricas Diárias
+              </Typography>
+            </Box>
+          </Box>
+        </TableCell>
+
+        {[0, 1, 2, 3, 4].map((i) => (
+          <TableCell
+            key={`empty-sum-${i}`}
+            sx={{
+              borderRight: "1px solid rgba(224,224,224,0.3)",
+              bgcolor: (theme) => theme.palette.mode === "dark" ? "#111827" : "#fff",
+            }}
+          />
+        ))}
+
+        {cycleDays.map((day, idx) => {
+          const dateStr = formatDateToISO(day);
+          const x = contagemDiaria[dateStr]?.["X"] || 0;
+          const e = contagemDiaria[dateStr]?.["E"] || 0;
+          const somaXE = x + e;
+
+          return (
+            <TableCell
+              key={idx}
+              align="center"
+              sx={{
+                borderRight: "1px solid",
+                borderColor: (theme) => theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
+                bgcolor: (theme) => theme.palette.mode === "dark" ? "#111827" : "#fff",
+              }}
+            >
+              {somaXE > 0 ? (
+                <Typography variant="body2" sx={{ fontWeight: 800, color: "#f59e0b" }}>
+                  {somaXE * 12}
+                </Typography>
+              ) : (
+                <Typography variant="body2" sx={{ fontWeight: 400, color: "rgba(0, 0, 0, 0.38)" }}>
+                  —
+                </Typography>
+              )
+
+              }
+
+            </TableCell>
+          );
+        })}
+      </TableRow>
+    </>
+  );
+}
+
 /**
  * Tabela principal de plantão, agrupada por setor/locação.
  */
-export default function ScheduleTable({ forms, cycleDays, onCellClick, onHoursChange }: ScheduleTableProps) {
+export default function ScheduleTable({ forms, cycleDays, onCellClick, onHoursChange, contagemDiaria }: ScheduleTableProps) {
   const sectorGroups = groupFormsBySector(forms);
-  const totalColumns = 6 + cycleDays.length; // Nome + Horas + X + E + F + A + dias
+  const totalColumns = 6 + cycleDays.length; // Nome + Contrato + X + E + F + A + dias
+
+  const totalXE = contagemDiaria ? contagemDiaria.totalPlantoes + contagemDiaria.totalExtras : 0;
+  const totalFA = contagemDiaria ? contagemDiaria.totalFerias + contagemDiaria.totalAusentes : 0;
+  const alertaGeral = contagemDiaria?.alertaAusencias ?? false;
 
   return (
-    <Paper elevation={0} sx={{ borderRadius: "16px", border: "1px solid", borderColor: (theme) => theme.palette.mode === "dark" ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)", overflow: "hidden" }}>
-      <TableContainer sx={{ maxHeight: "68vh" }}>
-        <Table stickyHeader size="small" aria-label="schedule grid">
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ fontWeight: 800, zIndex: 10, left: 0, position: "sticky", background: (theme) => theme.palette.mode === "dark" ? "#111827" : "#f1f5f9", minWidth: "200px", borderRight: "1px solid rgba(224,224,224,0.3)" }}>
-                Funcionário
-              </TableCell>
-              <TableCell align="center" sx={{ fontWeight: 800, zIndex: 5, background: (theme) => theme.palette.mode === "dark" ? "#111827" : "#f1f5f9", minWidth: "70px", borderRight: "1px solid rgba(224,224,224,0.3)" }}>
-                Horas
-              </TableCell>
-              <TableCell align="center" sx={{ fontWeight: 800, zIndex: 5, background: (theme) => theme.palette.mode === "dark" ? "#111827" : "#f1f5f9", minWidth: "40px", borderRight: "1px solid rgba(224,224,224,0.3)" }}>
-                <Tooltip title="Plantão 12h (X)">
-                  <Typography variant="body2" sx={{ fontWeight: 800, color: "#3b82f6", cursor: "help" }}>X</Typography>
-                </Tooltip>
-              </TableCell>
-              <TableCell align="center" sx={{ fontWeight: 800, zIndex: 5, background: (theme) => theme.palette.mode === "dark" ? "#111827" : "#f1f5f9", minWidth: "40px", borderRight: "1px solid rgba(224,224,224,0.3)" }}>
-                <Tooltip title="Plantão Extra (E)">
-                  <Typography variant="body2" sx={{ fontWeight: 800, color: "#8b5cf6", cursor: "help" }}>E</Typography>
-                </Tooltip>
-              </TableCell>
-              <TableCell align="center" sx={{ fontWeight: 800, zIndex: 5, background: (theme) => theme.palette.mode === "dark" ? "#111827" : "#f1f5f9", minWidth: "40px", borderRight: "1px solid rgba(224,224,224,0.3)" }}>
-                <Tooltip title="Férias (F)">
-                  <Typography variant="body2" sx={{ fontWeight: 800, color: "#10b981", cursor: "help" }}>F</Typography>
-                </Tooltip>
-              </TableCell>
-              <TableCell align="center" sx={{ fontWeight: 800, zIndex: 5, background: (theme) => theme.palette.mode === "dark" ? "#111827" : "#f1f5f9", minWidth: "40px", borderRight: "1px solid rgba(224,224,224,0.3)" }}>
-                <Tooltip title="Ausência (A)">
-                  <Typography variant="body2" sx={{ fontWeight: 800, color: "#ef4444", cursor: "help" }}>A</Typography>
-                </Tooltip>
-              </TableCell>
-              {cycleDays.map((day, idx) => {
-                const { dayNum, monthName, weekDayName, isWeekend } = getDayHeader(day);
-                return (
-                  <TableCell key={idx} align="center" sx={{ p: 1, zIndex: 5, minWidth: "48px", fontWeight: 700, bgcolor: (theme) => isWeekend ? (theme.palette.mode === "dark" ? "#1e293b" : "#f8fafc") : (theme.palette.mode === "dark" ? "#111827" : "#f1f5f9"), borderRight: "1px solid", borderColor: (theme) => theme.palette.mode === "dark" ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)" }}>
-                    <Box sx={{ fontSize: "12px", color: "text.primary" }}>{dayNum}</Box>
-                    <Box sx={{ fontSize: "9px", color: "text.secondary", textTransform: "uppercase" }}>{weekDayName}</Box>
-                    <Box sx={{ fontSize: "9px", color: "primary.main", fontWeight: "normal" }}>{monthName}</Box>
-                  </TableCell>
-                );
-              })}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {sectorGroups.map((group) => (
-              <React.Fragment key={group.sector}>
-                <SectorHeaderRow sector={group.sector} colSpan={totalColumns} />
-                {group.forms.map((form) => (
-                  <EmployeeRow key={form.id} form={form} cycleDays={cycleDays} onCellClick={onCellClick} onHoursChange={onHoursChange} />
-                ))}
-              </React.Fragment>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Paper>
+    <>
+      {alertaGeral && (
+        <Alert
+          severity="error"
+          icon={<WarningAmberIcon />}
+          sx={{ mb: 2, borderRadius: "12px", fontWeight: 600 }}
+        >
+          <AlertTitle sx={{ fontWeight: 800 }}>Atenção: Ausências acima do previsto</AlertTitle>
+          A soma de Férias + Ausências ({totalFA * 12} horas) é maior que a soma de Plantão + Plantão Extra ({totalXE * 12} horas) no período.
+        </Alert>
+      )}
+      <Paper elevation={0} sx={{ borderRadius: "16px", border: "1px solid", borderColor: (theme) => theme.palette.mode === "dark" ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)", overflow: "hidden" }}>
+        <TableContainer sx={{ maxHeight: "68vh" }}>
+          <Table stickyHeader size="small" aria-label="schedule grid">
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 800, zIndex: 10, left: 0, position: "sticky", background: (theme) => theme.palette.mode === "dark" ? "#111827" : "#f1f5f9", minWidth: "200px", borderRight: "1px solid rgba(224,224,224,0.3)" }}>
+                  Funcionário
+                </TableCell>
+                <TableCell align="center" sx={{ fontWeight: 800, zIndex: 5, background: (theme) => theme.palette.mode === "dark" ? "#111827" : "#f1f5f9", minWidth: "70px", borderRight: "1px solid rgba(224,224,224,0.3)" }}>
+                  Contrato
+                </TableCell>
+                <TableCell align="center" sx={{ fontWeight: 800, zIndex: 5, background: (theme) => theme.palette.mode === "dark" ? "#111827" : "#f1f5f9", minWidth: "40px", borderRight: "1px solid rgba(224,224,224,0.3)" }}>
+                  <Tooltip title="Plantão 12h (X)">
+                    <Typography variant="body2" sx={{ fontWeight: 800, color: "#3b82f6", cursor: "help" }}>X</Typography>
+                  </Tooltip>
+                </TableCell>
+                <TableCell align="center" sx={{ fontWeight: 800, zIndex: 5, background: (theme) => theme.palette.mode === "dark" ? "#111827" : "#f1f5f9", minWidth: "40px", borderRight: "1px solid rgba(224,224,224,0.3)" }}>
+                  <Tooltip title="Plantão Extra (E)">
+                    <Typography variant="body2" sx={{ fontWeight: 800, color: "#8b5cf6", cursor: "help" }}>E</Typography>
+                  </Tooltip>
+                </TableCell>
+                <TableCell align="center" sx={{ fontWeight: 800, zIndex: 5, background: (theme) => theme.palette.mode === "dark" ? "#111827" : "#f1f5f9", minWidth: "40px", borderRight: "1px solid rgba(224,224,224,0.3)" }}>
+                  <Tooltip title="Férias (F)">
+                    <Typography variant="body2" sx={{ fontWeight: 800, color: "#10b981", cursor: "help" }}>F</Typography>
+                  </Tooltip>
+                </TableCell>
+                <TableCell align="center" sx={{ fontWeight: 800, zIndex: 5, background: (theme) => theme.palette.mode === "dark" ? "#111827" : "#f1f5f9", minWidth: "40px", borderRight: "1px solid rgba(224,224,224,0.3)" }}>
+                  <Tooltip title="Ausência (A)">
+                    <Typography variant="body2" sx={{ fontWeight: 800, color: "#ef4444", cursor: "help" }}>A</Typography>
+                  </Tooltip>
+                </TableCell>
+                {cycleDays.map((day, idx) => {
+                  const { dayNum, monthName, weekDayName, isWeekend } = getDayHeader(day);
+                  return (
+                    <TableCell key={idx} align="center" sx={{ p: 1, zIndex: 5, minWidth: "48px", fontWeight: 700, bgcolor: (theme) => isWeekend ? (theme.palette.mode === "dark" ? "#1e293b" : "#f8fafc") : (theme.palette.mode === "dark" ? "#111827" : "#f1f5f9"), borderRight: "1px solid", borderColor: (theme) => theme.palette.mode === "dark" ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)" }}>
+                      <Box sx={{ fontSize: "12px", color: "text.primary" }}>{dayNum}</Box>
+                      <Box sx={{ fontSize: "9px", color: "text.secondary", textTransform: "uppercase" }}>{weekDayName}</Box>
+                      <Box sx={{ fontSize: "9px", color: "primary.main", fontWeight: "normal" }}>{monthName}</Box>
+                    </TableCell>
+                  );
+                })}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {sectorGroups.map((group) => (
+                <React.Fragment key={group.sector}>
+                  <SectorHeaderRow sector={group.sector} colSpan={totalColumns} />
+                  {group.forms.map((form) => (
+                    <EmployeeRow key={form.id} form={form} cycleDays={cycleDays} onCellClick={onCellClick} onHoursChange={onHoursChange} />
+                  ))}
+                </React.Fragment>
+              ))}
+
+              {/* Novas 4 Linhas de Resumo (Substituiu a antiga DailySummaryRow) */}
+              {contagemDiaria && (
+                <DailySummaryRows cycleDays={cycleDays} contagemDiaria={contagemDiaria.porDia} />
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Paper>
+    </>
   );
 }

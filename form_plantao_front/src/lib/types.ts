@@ -93,3 +93,25 @@ export interface ToastState {
   message: string;
   severity: "success" | "error";
 }
+
+/**
+ * Contagem de marcações por dia.
+ * Chave: data no formato "YYYY-MM-DD"
+ * Valor: mapa de caractere (tipo) → quantidade (ex: { "X": 12, "E": 1, "F": 0, "A": 0 })
+ */
+export type ContagemDiaria = Record<string, Record<string, number>>;
+
+/**
+ * Resposta completa do endpoint de contagem diária: o mapa por dia (porDia)
+ * já acompanhado dos totais agregados do período e do alerta de ausências,
+ * calculados pelo backend.
+ */
+export interface ContagemDiariaResponse {
+  porDia: ContagemDiaria;
+  totalPlantoes: number;
+  totalExtras: number;
+  totalFerias: number;
+  totalAusentes: number;
+  alertaAusencias: boolean;
+}
+
