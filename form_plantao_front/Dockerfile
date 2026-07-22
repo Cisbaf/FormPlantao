@@ -1,29 +1,24 @@
 # 1️⃣ Build stage
 FROM node:20-alpine AS builder
-
 WORKDIR /app
 
-# Copia apenas o necessário primeiro (melhor cache)
 COPY package.json package-lock.json* ./
 
-# Instala dependências
+# 👇 Change this line from "npm ci" to "npm install"
 RUN npm install
 
-# Copia o restante do projeto
 COPY . .
-
-# Build do Next
 RUN npm run build
 
+# Prune development dependencies so they don't go to production
+RUN npm prune --production
 
 # 2️⃣ Runtime stage (imagem menor)
 FROM node:20-alpine AS runner
-
 WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Copia apenas o necessário para rodar
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next

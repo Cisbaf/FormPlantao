@@ -21,6 +21,6 @@ COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8080
 
-ENV SPRING_PROFILES_ACTIVE=prod
+ENV PROFILE_ACTIVE=prod
 
 ENTRYPOINT ["java","-Xms128m","-Xmx384m","-XX:+UseG1GC","-XX:+UseContainerSupport","-jar","app.jar"]

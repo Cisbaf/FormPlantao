@@ -1,0 +1,35 @@
+services:
+
+  backend:
+    build:
+      context: ./FormPlantaoBack
+      dockerfile: Dockerfile
+    container_name: form_plantao_backend
+    ports:
+      - "8080:8080"
+    environment:
+      - PROFILE_ACTIVE=prod
+      - URL_DATABASE=mysql://mysql_aval_bases:3306/formPlantao
+      - USER_DATABASE=root
+      - PASS_DATABASE=root
+    networks:
+      - rede_banco_compartilhada
+
+  frontend:
+    build:
+      context: ./form_plantao_front
+      dockerfile: Dockerfile
+    container_name: form_plantao_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - BACKEND_URL=http://backend:8080
+    depends_on:
+      - backend
+    networks:
+      - rede_banco_compartilhada
+
+networks:
+  rede_banco_compartilhada:
+    external: true
+    name: bases_network
