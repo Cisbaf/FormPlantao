@@ -15,14 +15,12 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   const [mode, setMode] = useState<"light" | "dark">("dark");
   const [mounted, setMounted] = useState(false);
 
-  // 1. Ao carregar a tela, verifica se há um tema salvo no localStorage
   useEffect(() => {
     const savedMode = localStorage.getItem("themeMode") as "light" | "dark" | null;
 
     if (savedMode) {
       setMode(savedMode);
     } else {
-      // Opcional: Se não tiver nada salvo, puxa a preferência do sistema operacional
       const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       setMode(systemPrefersDark ? "dark" : "light");
     }

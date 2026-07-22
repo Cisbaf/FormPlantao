@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 
-const BackEndURL = process.env.BACKEND_INTERNAL_URL || "http://localhost:8080";
+const BackEndURL = process.env.BACKEND_URL;
 
 export async function proxyFetch(path: string, init?: RequestInit) {
+    if (!BackEndURL) {
+        return NextResponse.json(
+            { message: "Bad gateway", detail: "BackEndURL não configurado" },
+            { status: 502 }
+        );
+    }
     try {
         const modifiedInit = { ...init };
 
