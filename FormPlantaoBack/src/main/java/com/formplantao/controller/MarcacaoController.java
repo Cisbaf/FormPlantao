@@ -1,5 +1,6 @@
 package com.formplantao.controller;
 
+import com.formplantao.model.dto.ContagemDiariaResponseDTO;
 import com.formplantao.model.dto.MarcacaoDTO;
 import com.formplantao.model.dto.RelatorioLocacaoDTO;
 import com.formplantao.service.MarcacaoService;
@@ -9,8 +10,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,6 +32,19 @@ public class MarcacaoController {
     public ResponseEntity<MarcacaoDTO> atualizarMarcacao(@PathVariable Long id, @RequestBody @Valid MarcacaoDTO marcacaoDTO) {
         MarcacaoDTO updated = marcacaoService.atualizarMarcacao(id, marcacaoDTO);
         return ResponseEntity.ok(updated);
+    }
+
+    @GetMapping("/data")
+    public ResponseEntity<Map<Character, Integer>> getMarcacaoByData(@RequestParam LocalDate dataMarca) {
+        return ResponseEntity.ok(marcacaoService.getMarcacaoByData(dataMarca));
+    }
+
+    @GetMapping("/contagem-diaria")
+    public ResponseEntity<ContagemDiariaResponseDTO> getContagemDiaria(@RequestParam YearMonth data) {
+        if (data == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        return ResponseEntity.ok(marcacaoService.getContagemPorDia(data));
     }
 
     @GetMapping

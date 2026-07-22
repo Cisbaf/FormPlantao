@@ -2,6 +2,7 @@ package com.formplantao.service;
 
 import com.formplantao.model.Horas;
 import com.formplantao.model.Marcacao;
+import com.formplantao.model.dto.ContagemDiariaResponseDTO;
 import com.formplantao.model.dto.MarcacaoDTO;
 import com.formplantao.model.dto.RelatorioLocacaoDTO;
 import com.formplantao.repository.FormularioUnicoRepository;
@@ -12,8 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -111,6 +111,45 @@ public class MarcacaoService {
                         .formId(m.getFormularioUnico().getId())
                         .build())
                 .toList();
+    }
+
+    /**
+     * Retorna a contagem de cada tipo de marcação para todos os dias do ciclo (16 do mês anterior até 15 do mês atual),
+     * já acompanhada dos totais agregados do período e do alerta de ausências.
+     */
+    public ContagemDiariaResponseDTO getContagemPorDia(YearMonth dataReferencia) {
+        LocalDate inicioCiclo = dataReferencia.minusMonths(1).atDay(16);
+        LocalDate fimCiclo = dataReferencia.atDay(15);
+
+        Map<LocalDate, Map<Character, Integer>> resultado = new LinkedHashMap<>();
+
+        LocalDate atual = inicioCiclo;
+        while (!atual.isAfter(fimCiclo)) {
+            resultado.put(atual, getMarcacaoByData(atual));
+            atual = atual.plusDays(1);
+        }
+
+        return ContagemDiariaResponseDTO.of(resultado);
+    }
+
+    public  Map<Character, Integer>  getMarcacaoByData(LocalDate dataMarca) {
+        var marcas =  marcacaoRepository.findAllByDataMarcada(dataMarca);
+        Map<Character, Integer> contagem = new HashMap<>();
+        contagem.put('X', 0); // Plantão
+        contagem.put('E', 0); // Extra
+        contagem.put('F', 0); // Férias/Folga
+        contagem.put('A', 0); // Ausente
+
+        for (Marcacao marcacao : marcas) {
+            if (marcacao.getMarca() == null) continue;
+
+            for (char c : marcacao.getMarca().toUpperCase().toCharArray()) {
+                if (contagem.containsKey(c)) {
+                    contagem.put(c, contagem.get(c) + 1);
+                }
+            }
+        }
+        return contagem;
     }
 
     public List<RelatorioLocacaoDTO> gerarRelatorioAgrupadoPorLocacao(YearMonth dataReferencia) {

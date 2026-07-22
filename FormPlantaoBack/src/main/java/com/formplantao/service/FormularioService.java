@@ -48,6 +48,10 @@ public class FormularioService {
         return formularioUnicoRepository.findAll();
     }
 
+    public List<FormularioUnico> getByData(YearMonth dataReferencia) {
+        return formularioUnicoRepository.findByDataReferencia(dataReferencia);
+    }
+
     @Transactional
     public void deleteById(Long id) {
         formularioUnicoRepository.deleteById(id);

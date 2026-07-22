@@ -43,6 +43,20 @@ public class FormularioController {
         return ResponseEntity.ok(dto);
     }
 
+    @GetMapping("/data")
+    public ResponseEntity<List<FormularioUnico>> getByData(@RequestParam String dataReferencia) {
+        if (dataReferencia == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        try {
+            YearMonth data = YearMonth.parse(dataReferencia);
+            return ResponseEntity.ok(formularioService.getByData(data));
+        }catch (Exception e){
+            throw new RuntimeException(e.getMessage());
+        }
+
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<FormularioDTO> updateFormulario(@PathVariable Long id, @RequestBody FormularioDTO formularioDTO) {
         if (id == null || formularioDTO == null) {
