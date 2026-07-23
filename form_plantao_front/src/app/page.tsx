@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Typography, Button, Box, CircularProgress, Paper, Alert, Snackbar } from "@mui/material";
-import { CalendarMonth, InfoOutlined } from "@mui/icons-material";
+import { useState, useEffect } from "react";
+import { Typography, Button, Box, CircularProgress, Paper, Alert, Snackbar, TextField } from "@mui/material";
+import { CalendarMonth, InfoOutlined, Search } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { deleteByDataReferencia, fetchFormularios } from "@/lib/api";
 import { FormularioUnico } from "@/lib/types";
@@ -16,7 +16,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [mesesEscondidos, setMesesEscondidos] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [toast, setToast] = useState<{ open: boolean; message: string; severity: "success" | "error" }>({
     open: false,
     message: "",
@@ -44,6 +44,15 @@ export default function Home() {
   }, [refreshTrigger]);
 
   const groupedMonths = groupFormulariosByMonth(formularios);
+
+  const filteredMonths = groupedMonths.filter((group) => {
+    if (!searchTerm) return true;
+    const term = searchTerm.toLowerCase().trim();
+    return (
+      group.label.toLowerCase().includes(term) ||
+      group.yearMonth.toLowerCase().includes(term)
+    );
+  });
 
   const handleDeleteMonth = async (dataReferencia: string) => {
     const confirmar = window.confirm(
@@ -75,22 +84,59 @@ export default function Home() {
   return (
     <DashboardLayout onRefresh={() => setRefreshTrigger((prev) => prev + 1)}>
       {/* Intro section */}
-      <Box sx={{ mb: 5 }}>
-        <Typography
-          variant="h4"
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", md: "row" },
+          justifyContent: "space-between",
+          alignItems: { xs: "flex-start", md: "center" },
+          gap: 2,
+          mb: 5,
+        }}
+      >
+        <Box>
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 800,
+              mb: 1,
+              background: "linear-gradient(90deg, #6366f1, #a855f7)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            Painel de Frequência de Plantões
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Selecione um mês de referência para visualizar, editar ou adicionar as marcações de plantão.
+          </Typography>
+        </Box>
+
+        <Box
           sx={{
-            fontWeight: 800,
-            mb: 1,
-            background: "linear-gradient(90deg, #6366f1, #a855f7)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
+            display: "flex",
+            alignItems: "center",
+            width: { xs: "100%", md: "320px" },
+            border: "1px solid",
+            borderColor: (theme) =>
+              theme.palette.mode === "dark" ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.12)",
+            borderRadius: "12px",
+            px: 2,
+            py: 1,
+            bgcolor: (theme) =>
+              theme.palette.mode === "dark" ? "rgba(255,255,255,0.02)" : "#fff",
           }}
         >
-          Painel de Frequência de Plantões
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Selecione um mês de referência para visualizar, editar ou adicionar as marcações de plantão.
-        </Typography>
+          <Search fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
+          <TextField
+            placeholder="Buscar por mês ou ano..."
+            variant="standard"
+            fullWidth
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            slotProps={{ input: { disableUnderline: true } }}
+          />
+        </Box>
       </Box>
 
       {/* Info Banner */}
@@ -150,7 +196,7 @@ export default function Home() {
         </Paper>
       ) : (
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", md: "1fr 1fr 1fr 1fr 1fr" }, gap: 3 }}>
-          {groupedMonths.filter(group => !mesesEscondidos.includes(group.label)).map((group) => (
+          {filteredMonths.map((group) => (
             <MonthCard
               key={group.yearMonth}
               group={group}

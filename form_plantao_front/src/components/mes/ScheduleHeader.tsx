@@ -1,4 +1,3 @@
-import React from "react";
 import { ArrowBack, Search } from "@mui/icons-material";
 import {
   Box,

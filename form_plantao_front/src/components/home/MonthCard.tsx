@@ -1,5 +1,5 @@
 import { GroupedMonth } from "@/lib/types";
-import { AccessTime, CalendarMonth, ChevronRight, Delete, PeopleAlt } from "@mui/icons-material";
+import { CalendarMonth, ChevronRight, Delete, PeopleAlt } from "@mui/icons-material";
 import {
   Box,
   Button,
