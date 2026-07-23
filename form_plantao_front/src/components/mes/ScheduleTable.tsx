@@ -151,7 +151,6 @@ function EmployeeRow({ form, cycleDays, onCellClick, onHoursChange }: { form: Fo
 
   return (
     <TableRow hover sx={{ "&:hover td": { bgcolor: (theme) => theme.palette.mode === "dark" ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.01)" } }}>
-      {/* Nome do funcionário (sticky) */}
       <TableCell sx={{ position: "sticky", left: 0, zIndex: 2, bgcolor: (theme) => theme.palette.mode === "dark" ? "#111827" : "#fff", borderRight: "1px solid rgba(224,224,224,0.3)" }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <Avatar sx={{ width: 32, height: 32, fontSize: "13px", fontWeight: "bold", bgcolor: "primary.main" }}>
@@ -166,7 +165,6 @@ function EmployeeRow({ form, cycleDays, onCellClick, onHoursChange }: { form: Fo
         </Box>
       </TableCell>
 
-      {/* Horas com Menu Dropdown */}
       <TableCell align="center" sx={{ fontWeight: 600, borderRight: "1px solid rgba(224,224,224,0.3)" }}>
         <Chip
           label={`${form.horas}h`}
@@ -181,13 +179,11 @@ function EmployeeRow({ form, cycleDays, onCellClick, onHoursChange }: { form: Fo
         </Menu>
       </TableCell>
 
-      {/* Totais de horas / plantões */}
       <TableCell align="center" sx={{ borderRight: "1px solid rgba(224,224,224,0.3)", fontWeight: 700, color: "#3b82f6" }}>{form.horasTotais?.horasPlantoes !== undefined ? form.horasTotais?.horasPlantoes * 12 : 0}</TableCell>
       <TableCell align="center" sx={{ borderRight: "1px solid rgba(224,224,224,0.3)", fontWeight: 700, color: "#8b5cf6" }}>{form.horasTotais?.horasExtras !== undefined ? form.horasTotais?.horasExtras * 12 : 0}</TableCell>
       <TableCell align="center" sx={{ borderRight: "1px solid rgba(224,224,224,0.3)", fontWeight: 700, color: "#10b981" }}>{form.horasTotais?.horasFerias !== undefined ? form.horasTotais?.horasFerias * 12 : 0}</TableCell>
       <TableCell align="center" sx={{ borderRight: "1px solid rgba(224,224,224,0.3)", fontWeight: 700, color: "#ef4444" }}>{form.horasTotais?.horasAusentes !== undefined ? form.horasTotais?.horasAusentes * 12 : 0}</TableCell>
 
-      {/* Células de marcação */}
       {cycleDays.map((day, idx) => {
         const dateStr = formatDateToISO(day);
         const marking = form.marcacoes?.find((m) => parseLocalDate(m.dataMarcada) === dateStr);
@@ -217,7 +213,6 @@ function EmployeeRow({ form, cycleDays, onCellClick, onHoursChange }: { form: Fo
   );
 }
 
-/** Configuração para gerar as linhas individuais de resumo final */
 const SUMMARY_ROWS = [
   { key: "X", label: "Total Plantão Ordinário", color: "#3b82f6" },
   { key: "E", label: "Total Plantão Extra", color: "#8b5cf6" },
@@ -225,7 +220,7 @@ const SUMMARY_ROWS = [
   { key: "A", label: "Total Ausências", color: "#ef4444" },
 ];
 
-/** Componente que renderiza as 4 linhas de totais como se fossem funcionários */
+/** Componente que renderiza as linhas de totais */
 function DailySummaryRows({ cycleDays, contagemDiaria }: { cycleDays: Date[]; contagemDiaria: ContagemDiaria }) {
   return (
     <>
@@ -253,7 +248,6 @@ function DailySummaryRows({ cycleDays, contagemDiaria }: { cycleDays: Date[]; co
 
       {SUMMARY_ROWS.map(({ key, label, color }) => (
         <TableRow key={key} hover sx={{ "&:hover td": { bgcolor: (theme) => theme.palette.mode === "dark" ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.01)" } }}>
-          {/* Label usando o visual de funcionário */}
           <TableCell
             sx={{
               position: "sticky",
@@ -276,7 +270,6 @@ function DailySummaryRows({ cycleDays, contagemDiaria }: { cycleDays: Date[]; co
             </Box>
           </TableCell>
 
-          {/* Colunas vazias no meio da tabela para alinhar o layout */}
           {[0, 1, 2, 3, 4].map((i) => (
             <TableCell
               key={`empty-${i}`}
@@ -287,10 +280,33 @@ function DailySummaryRows({ cycleDays, contagemDiaria }: { cycleDays: Date[]; co
             />
           ))}
 
-          {/* Renderização do valor nos dias correspondentes */}
           {cycleDays.map((day, idx) => {
             const dateStr = formatDateToISO(day);
-            const count = contagemDiaria[dateStr]?.[key] || 0;
+            const dayCounts = contagemDiaria[dateStr] || {};
+            const count = dayCounts[key] || 0;
+
+            // Variáveis do dia
+            const f = dayCounts.F || 0;
+            const a = dayCounts.A || 0;
+            const x = dayCounts.X || 0;
+            const e = dayCounts.E || 0;
+
+            // Verificações
+            const isDeficit = (f + a) > (x + e);
+            const isExcesso = (x + e) > 10;
+
+            // Função para definir o fundo
+            const getBgColor = (theme: any) => {
+              // Prioriza mostrar o déficit (vermelho) se ambas as condições acontecerem
+              if (isDeficit) {
+                return theme.palette.mode === "dark" ? "rgba(239, 68, 68, 0.15)" : "rgba(239, 68, 68, 0.1)";
+              }
+              // Caso contrário, mostra o aviso de excesso (laranja/amarelo)
+              if (isExcesso) {
+                return theme.palette.mode === "dark" ? "rgba(245, 158, 11, 0.15)" : "rgba(245, 158, 11, 0.1)";
+              }
+              return theme.palette.mode === "dark" ? "#111827" : "#fff";
+            };
 
             return (
               <TableCell
@@ -299,7 +315,7 @@ function DailySummaryRows({ cycleDays, contagemDiaria }: { cycleDays: Date[]; co
                 sx={{
                   borderRight: "1px solid",
                   borderColor: (theme) => theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
-                  bgcolor: (theme) => theme.palette.mode === "dark" ? "#111827" : "#fff",
+                  bgcolor: (theme) => getBgColor(theme),
                 }}
               >
                 {count > 0 ? (
@@ -314,73 +330,6 @@ function DailySummaryRows({ cycleDays, contagemDiaria }: { cycleDays: Date[]; co
           })}
         </TableRow>
       ))}
-
-      {/* Linha extra: soma X + E por dia */}
-      {/* <TableRow hover sx={{ "&:hover td": { bgcolor: (theme) => theme.palette.mode === "dark" ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.01)" } }}>
-        <TableCell
-          sx={{
-            position: "sticky",
-            left: 0,
-            zIndex: 2,
-            bgcolor: (theme) => theme.palette.mode === "dark" ? "#111827" : "#fff",
-            borderRight: "1px solid rgba(224,224,224,0.3)",
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <Avatar sx={{ width: 32, height: 32, fontSize: "13px", fontWeight: "bold", bgcolor: "#f59e0b", color: "#fff" }}>
-              PG
-            </Avatar>
-            <Box>
-              <Typography variant="body2" sx={{ fontWeight: 700, color: "#f59e0b" }}>Total Plantões no Geral</Typography>
-              <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
-                Métricas Diárias
-              </Typography>
-            </Box>
-          </Box>
-        </TableCell>
-
-        {[0, 1, 2, 3, 4].map((i) => (
-          <TableCell
-            key={`empty-sum-${i}`}
-            sx={{
-              borderRight: "1px solid rgba(224,224,224,0.3)",
-              bgcolor: (theme) => theme.palette.mode === "dark" ? "#111827" : "#fff",
-            }}
-          />
-        ))}
-
-        {cycleDays.map((day, idx) => {
-          const dateStr = formatDateToISO(day);
-          const x = contagemDiaria[dateStr]?.["X"] || 0;
-          const e = contagemDiaria[dateStr]?.["E"] || 0;
-          const somaXE = x + e;
-
-          return (
-            <TableCell
-              key={idx}
-              align="center"
-              sx={{
-                borderRight: "1px solid",
-                borderColor: (theme) => theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
-                bgcolor: (theme) => theme.palette.mode === "dark" ? "#111827" : "#fff",
-              }}
-            >
-              {somaXE > 0 ? (
-                <Typography variant="body2" sx={{ fontWeight: 800, color: "#f59e0b" }}>
-                  {somaXE * 12}
-                </Typography>
-              ) : (
-                <Typography variant="body2" sx={{ fontWeight: 400, color: "rgba(0, 0, 0, 0.38)" }}>
-                  —
-                </Typography>
-              )
-
-              }
-
-            </TableCell>
-          );
-        })}
-      </TableRow> */}
     </>
   );
 }
@@ -390,24 +339,75 @@ function DailySummaryRows({ cycleDays, contagemDiaria }: { cycleDays: Date[]; co
  */
 export default function ScheduleTable({ forms, cycleDays, onCellClick, onHoursChange, contagemDiaria }: ScheduleTableProps) {
   const sectorGroups = groupFormsBySector(forms);
-  const totalColumns = 6 + cycleDays.length; // Nome + Contrato + X + E + F + A + dias
+  const totalColumns = 6 + cycleDays.length;
 
   const totalXE = contagemDiaria ? contagemDiaria.totalPlantoes + contagemDiaria.totalExtras : 0;
   const totalFA = contagemDiaria ? contagemDiaria.totalFerias + contagemDiaria.totalAusentes : 0;
   const alertaGeral = contagemDiaria?.alertaAusencias ?? false;
 
+  // Processa dias com DÉFICIT de efetivo (F+A > X+E)
+  const diasComDeficit = cycleDays.filter((day) => {
+    if (!contagemDiaria?.porDia) return false;
+    const dateStr = formatDateToISO(day);
+    const count = contagemDiaria.porDia[dateStr] || {};
+    const f = count.F || 0;
+    const a = count.A || 0;
+    const x = count.X || 0;
+    const e = count.E || 0;
+    return (f + a) > (x + e);
+  });
+  const hasDeficitDiario = diasComDeficit.length > 0;
+
+  // Processa dias com EXCESSO de efetivo (X+E > 10)
+  const diasComExcesso = cycleDays.filter((day) => {
+    if (!contagemDiaria?.porDia) return false;
+    const dateStr = formatDateToISO(day);
+    const count = contagemDiaria.porDia[dateStr] || {};
+    const x = count.X || 0;
+    const e = count.E || 0;
+    return (x + e) > 10;
+  });
+  const hasExcessoDiario = diasComExcesso.length > 0;
+
   return (
     <>
-      {alertaGeral && (
+      {/* 🔴 ALERTA DE DÉFICIT (Erro) */}
+      {(alertaGeral || hasDeficitDiario) && (
         <Alert
           severity="error"
           icon={<WarningAmberIcon />}
           sx={{ mb: 2, borderRadius: "12px", fontWeight: 600 }}
         >
-          <AlertTitle sx={{ fontWeight: 800 }}>Atenção: Ausências acima do previsto</AlertTitle>
-          A soma de Férias + Ausências ({totalFA * 12} horas) é maior que a soma de Plantão + Plantão Extra ({totalXE * 12} horas) no período.
+          <AlertTitle sx={{ fontWeight: 800 }}>Atenção: Risco de Efetivo</AlertTitle>
+          {alertaGeral && (
+            <Box>A soma total no período de Férias + Ausências ({totalFA * 12}h) é maior que Plantão + Extra ({totalXE * 12}h).</Box>
+          )}
+          {hasDeficitDiario && (
+            <Box sx={{ mt: alertaGeral ? 1 : 0 }}>
+              <strong>Dias com déficit (F+A &gt; X+E):</strong>{" "}
+              {diasComDeficit.map(d => `${getDayHeader(d).dayNum}/${getDayHeader(d).monthName}`).join(", ")}.
+              (Destacados em vermelho no Resumo Geral).
+            </Box>
+          )}
         </Alert>
       )}
+
+      {/* 🟡 ALERTA DE EXCESSO (Aviso) */}
+      {hasExcessoDiario && (
+        <Alert
+          severity="warning"
+          icon={<WarningAmberIcon />}
+          sx={{ mb: 2, borderRadius: "12px", fontWeight: 600 }}
+        >
+          <AlertTitle sx={{ fontWeight: 800 }}>Aviso: Excesso de Plantões</AlertTitle>
+          <Box>
+            <strong>Dias com mais de 10 Plantões/Extras (X+E &gt; 10):</strong>{" "}
+            {diasComExcesso.map(d => `${getDayHeader(d).dayNum}/${getDayHeader(d).monthName}`).join(", ")}.
+            (Destacados em amarelo no Resumo Geral).
+          </Box>
+        </Alert>
+      )}
+
       <Paper
         elevation={0}
         sx={{
@@ -484,7 +484,6 @@ export default function ScheduleTable({ forms, cycleDays, onCellClick, onHoursCh
                 </React.Fragment>
               ))}
 
-              {/* Novas 4 Linhas de Resumo (Substituiu a antiga DailySummaryRow) */}
               {contagemDiaria && (
                 <DailySummaryRows cycleDays={cycleDays} contagemDiaria={contagemDiaria.porDia} />
               )}
